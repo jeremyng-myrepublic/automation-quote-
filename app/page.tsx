@@ -508,8 +508,8 @@ function PainPointsSection() {
           </h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {painPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
-                <span className="shrink-0 mt-0.5" style={{ color: "#ef4444", fontSize: "24px" }}>❌</span>
+              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
+                <span className="shrink-0" style={{ color: "#ef4444", fontSize: "24px", lineHeight: 1 }}>❌</span>
                 {point}
               </li>
             ))}
@@ -527,8 +527,8 @@ function PainPointsSection() {
           </h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {solutionPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
-                <span className="shrink-0 mt-0.5" style={{ color: "#10b981", fontSize: "24px" }}>✅</span>
+              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
+                <span className="shrink-0" style={{ color: "#10b981", fontSize: "24px", lineHeight: 1 }}>✅</span>
                 {point}
               </li>
             ))}
@@ -750,51 +750,53 @@ function HowItWorks() {
         </div>
       </div>
 
-      {/* ── Mobile: vertical timeline ── */}
-      <div className="md:hidden mt-10">
-        <div className="relative ml-6 pl-8">
-          {/* Vertical line */}
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: "2px",
-              background: "linear-gradient(180deg, #185FA5, #0ea5e9)",
-              boxShadow: "0 0 8px rgba(14,165,233,0.4)",
-              opacity: triggered ? 1 : 0,
-              transition: "opacity 0.8s ease-out",
-            }}
-          />
-          {howItWorksSteps.map((step, i) => {
-            const nodeDelay = `${0.2 + i * 0.2}s`;
-            const contentDelay = `${0.4 + i * 0.2}s`;
-            return (
-              <div key={step.num} className="relative pb-10 last:pb-0">
-                {/* Node */}
+      {/* ── Mobile: vertical steps ── */}
+      <div className="flex md:hidden mt-10 flex-col" style={{ gap: "24px" }}>
+        {howItWorksSteps.map((step, i) => {
+          const nodeDelay = `${0.2 + i * 0.2}s`;
+          const contentDelay = `${0.4 + i * 0.2}s`;
+          const isLast = i === howItWorksSteps.length - 1;
+          return (
+            <div key={step.num} className="relative" style={{ display: "flex", gap: "16px" }}>
+              {/* Left: node + connecting line */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                 <div
-                  className={`timeline-node absolute top-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-xs font-bold text-white z-10 ${triggered ? "popped" : ""}`}
-                  style={{ left: "-2.25rem", animationDelay: triggered ? nodeDelay : undefined }}
+                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
+                  style={{ width: "44px", height: "44px", animationDelay: triggered ? nodeDelay : undefined }}
                 >
                   {step.num}
                 </div>
-                {/* Content */}
-                <div
-                  className={`timeline-content ${triggered ? "shown" : ""}`}
-                  style={{ transitionDelay: contentDelay }}
-                >
-                  <div style={{ fontSize: "22px", marginBottom: "4px" }}>{step.icon}</div>
-                  <h3 className="font-heading text-sm font-bold text-white mb-1">{step.title}</h3>
-                  <p className="text-xs leading-relaxed text-[#cbd5e1] mb-2">{step.desc}</p>
-                  <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
-                    {step.badge}
-                  </span>
-                </div>
+                {!isLast && (
+                  <div
+                    style={{
+                      flex: 1,
+                      width: "2px",
+                      marginTop: "4px",
+                      background: "linear-gradient(180deg, #185FA5, #0ea5e9)",
+                      boxShadow: "0 0 6px rgba(14,165,233,0.3)",
+                      opacity: triggered ? 1 : 0,
+                      transition: `opacity 0.6s ease-out ${0.4 + i * 0.2}s`,
+                    }}
+                  />
+                )}
               </div>
-            );
-          })}
-        </div>
+              {/* Right: content */}
+              <div
+                className={`timeline-content ${triggered ? "shown" : ""}`}
+                style={{ transitionDelay: contentDelay, paddingTop: "2px", minHeight: "44px" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "22px" }}>{step.icon}</span>
+                  <h3 className="font-heading font-bold text-white" style={{ fontSize: "15px" }}>{step.title}</h3>
+                </div>
+                <p className="leading-relaxed text-[#cbd5e1]" style={{ fontSize: "13px", marginBottom: "6px" }}>{step.desc}</p>
+                <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+                  {step.badge}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -1281,7 +1283,14 @@ export default function Home() {
             <SectionLabel label="Solutions" title="Choose Your Stack" />
 
             {/* Category filter pills */}
-            <div className="-mx-4 mb-8 flex gap-2 overflow-x-auto px-4 pb-2 sm:-mx-0 sm:flex-wrap sm:px-0 sm:pb-0">
+            <style>{`
+              @media (max-width: 767px) {
+                .cat-pills { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
+                .cat-pills > button { padding: 12px 16px !important; border: 1px solid #185FA5 !important; width: 100%; }
+                .cat-pill-inactive { background: #1e293b !important; color: #ffffff !important; }
+              }
+            `}</style>
+            <div className="cat-pills mb-8 flex flex-wrap gap-2">
               {(["All", ...categories] as const).map((cat) => {
                 const isActive = activeCategory === cat;
                 return (
@@ -1291,7 +1300,7 @@ export default function Home() {
                     className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
                       isActive
                         ? "pill-active text-white shadow-lg shadow-[#0ea5e9]/10"
-                        : "pill-inactive border border-[#1e3a5f] text-[#94a3b8] hover:border-[#0ea5e9]/40 hover:text-gray-200"
+                        : `cat-pill-inactive pill-inactive border border-[#1e3a5f] text-[#94a3b8] hover:border-[#0ea5e9]/40 hover:text-gray-200`
                     }`}
                   >
                     {cat}
