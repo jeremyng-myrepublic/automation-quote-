@@ -562,6 +562,58 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Support & Training ── */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+        <SectionLabel label="Support" title="We're With You After Launch" />
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            {
+              icon: "🎓",
+              title: "End-User & Admin Training",
+              description:
+                "Formal training programs for both new users and advanced admins. Includes different learning formats to help your team stay current and keep getting value from your systems over time.",
+              price: "From $1,500",
+            },
+            {
+              icon: "🛟",
+              title: "Ongoing Customer Support",
+              description:
+                "Continued support after go-live through flexible Success Plans. Choose from tiered packages that include expertise, guidance, and education — higher tiers include a dedicated Technical Account Manager.",
+              price: "From $800/month",
+            },
+            {
+              icon: "🚀",
+              title: "Post-Deployment Adoption Help",
+              description:
+                "Hands-on adoption support beyond technical cutover — improving adoption, refining workflows, adding scope, and stabilising processes after your team starts using the system.",
+              price: "From $2,000",
+            },
+          ].map((card) => (
+            <div
+              key={card.title}
+              className="card-idle group flex flex-col rounded-xl border-2 border-[#1e3a5f] bg-[#111827] p-5 sm:p-6"
+            >
+              <div className="mb-3 text-3xl">{card.icon}</div>
+              <h3 className="font-heading mb-2 text-base font-semibold text-white">
+                {card.title}
+              </h3>
+              <p className="mb-5 flex-1 text-sm leading-relaxed text-gray-500">
+                {card.description}
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="price-glow text-sm font-bold">{card.price}</span>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="rounded-lg border border-[#0ea5e9]/30 px-4 py-2 text-sm font-semibold text-[#0ea5e9] transition hover:bg-[#0ea5e9]/10 hover:border-[#0ea5e9]/60 hover:shadow-[0_0_12px_rgba(14,165,233,0.25)]"
+                >
+                  Learn More
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Solutions ── */}
       <section id="solutions" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="flex gap-6">
