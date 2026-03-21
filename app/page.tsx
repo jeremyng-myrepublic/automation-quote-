@@ -959,8 +959,8 @@ export default function Home() {
           <div className="hidden items-center gap-6 md:flex">
             {[
               { label: "Packages", href: "#packages" },
-              { label: "Solutions", href: "#solutions" },
               { label: "Support", href: "#support" },
+              { label: "Solutions", href: "#solutions" },
               { label: "FAQ", href: "#faq" },
             ].map((link) => (
               <a
@@ -1010,8 +1010,8 @@ export default function Home() {
           <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#1e3a5f] bg-[#111827]/95 backdrop-blur-lg p-4 md:hidden">
             {[
               { label: "Packages", href: "#packages" },
-              { label: "Solutions", href: "#solutions" },
               { label: "Support", href: "#support" },
+              { label: "Solutions", href: "#solutions" },
               { label: "FAQ", href: "#faq" },
             ].map((link) => (
               <a
