@@ -79,7 +79,7 @@ const referralOptions = [
 
 const revealedIds = new Set<string>();
 
-function useScrollReveal() {
+function useScrollReveal(staggerMs = 100) {
   const ref = useRef<HTMLDivElement>(null);
   const observersRef = useRef<IntersectionObserver[]>([]);
 
@@ -131,7 +131,7 @@ function useScrollReveal() {
                 entry.target.classList.remove("reveal");
                 entry.target.classList.add("visible");
                 revealedIds.add(id);
-              }, idx * 100);
+              }, idx * staggerMs);
               observer.unobserve(entry.target);
             }
           });
@@ -276,7 +276,7 @@ function QuoteModal({
         </div>
 
         <div className="mb-6 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] p-4">
-          <p className="mb-1 text-sm font-medium text-gray-400">
+          <p className="mb-1 text-sm font-medium text-[#94a3b8]">
             {selected.length} solution{selected.length !== 1 && "s"} selected
           </p>
           <p className="text-2xl font-bold text-white">
@@ -379,13 +379,13 @@ function MobileDrawer({
                 <div className="flex items-start gap-2">
                   <span className="text-lg">{s.icon}</span>
                   <div>
-                    <p className="text-sm font-medium text-white">{s.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-medium text-[#e2e8f0]">{s.name}</p>
+                    <p className="text-xs text-[#94a3b8]">
                       {s.mandays} mandays &middot; ${(s.mandays * MANDAY_RATE).toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <button onClick={() => onToggle(s.id)} className="shrink-0 text-sm text-gray-600 hover:text-red-400">
+                <button onClick={() => onToggle(s.id)} className="shrink-0 text-sm text-[#64748b] hover:text-red-400">
                   ✕
                 </button>
               </div>
@@ -394,13 +394,13 @@ function MobileDrawer({
         </div>
 
         <div className="border-t border-[#1e3a5f]/50 px-5 pb-6 pt-4">
-          <div className="mb-1 flex justify-between text-sm text-gray-400">
+          <div className="mb-1 flex justify-between text-sm text-[#94a3b8]">
             <span>Total mandays</span>
             <span>{totalMandays}</span>
           </div>
           {discounted && (
             <>
-              <div className="mb-1 flex justify-between text-sm text-gray-500 line-through">
+              <div className="mb-1 flex justify-between text-sm text-[#64748b] line-through">
                 <span>Subtotal</span>
                 <span>${subtotal.toLocaleString()}</span>
               </div>
@@ -426,6 +426,482 @@ function MobileDrawer({
   );
 }
 
+/* ─── Pain Points & Solution ─── */
+
+const painPoints = [
+  "Manually replying to customer enquiries",
+  "Leads lost due to missed follow-ups",
+  "Hours wasted on data entry",
+  "No real-time pipeline visibility",
+  "Slow, manual staff onboarding",
+  "Chasing invoices and payments by hand",
+];
+
+const solutionPoints = [
+  "AI handles 80% of queries, 24/7",
+  "Instant automated lead follow-ups",
+  "Zero manual data entry",
+  "Live KPI dashboard, always updated",
+  "Staff onboarded automatically from day one",
+  "Invoices sent and chased automatically",
+];
+
+function useCountUp(target: number, suffix: string, triggered: boolean) {
+  const [display, setDisplay] = useState("0");
+  useEffect(() => {
+    if (!triggered) return;
+    const duration = 3000;
+    const steps = 60;
+    const increment = target / steps;
+    let current = 0;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      current = Math.min(target, Math.round(increment * step));
+      setDisplay(current + suffix);
+      if (step >= steps) clearInterval(timer);
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [triggered, target, suffix]);
+  return triggered ? display : "0" + suffix;
+}
+
+function PainPointsSection() {
+  const columnsRef = useScrollReveal();
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsTriggered, setStatsTriggered] = useState(false);
+
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStatsTriggered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const stat1 = useCountUp(10, "+", statsTriggered);
+  const stat2 = useCountUp(3, "x", statsTriggered);
+  const stat3 = useCountUp(70, "%", statsTriggered);
+  const stat4 = useCountUp(80, "%", statsTriggered);
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 sm:px-6" style={{ paddingTop: "80px", paddingBottom: "80px" }}>
+      <SectionLabel label="Sound Familiar?" title="Still Doing This Manually?" />
+
+      <div className="grid gap-6 md:grid-cols-2" ref={columnsRef}>
+        {/* Left: Pain points */}
+        <div
+          data-reveal-id="pain-col"
+          className={`${revealedIds.has("pain-col") ? "visible" : "reveal"} rounded-xl`}
+          style={{ backgroundColor: "#111827", border: "2px solid #1e3a5f", borderLeft: "4px solid #ef4444", padding: "40px", minHeight: "420px" }}
+        >
+          <h3 className="font-heading font-bold mb-6" style={{ color: "#f87171", fontSize: "22px" }}>
+            Without Automation
+          </h3>
+          <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {painPoints.map((point, i) => (
+              <li key={i} className="flex items-start gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
+                <span className="shrink-0 mt-0.5" style={{ color: "#ef4444", fontSize: "24px" }}>❌</span>
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Right: Solutions */}
+        <div
+          data-reveal-id="solution-col"
+          className={`${revealedIds.has("solution-col") ? "visible" : "reveal"} rounded-xl`}
+          style={{ backgroundColor: "#111827", border: "2px solid #1e3a5f", borderLeft: "4px solid #10b981", padding: "40px", minHeight: "420px" }}
+        >
+          <h3 className="font-heading font-bold mb-6" style={{ color: "#34d399", fontSize: "22px" }}>
+            With Jem AI Solutions
+          </h3>
+          <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            {solutionPoints.map((point, i) => (
+              <li key={i} className="flex items-start gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
+                <span className="shrink-0 mt-0.5" style={{ color: "#10b981", fontSize: "24px" }}>✅</span>
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Stat bar */}
+      <div
+        ref={statsRef}
+        className="mt-8 rounded-xl border border-[#1e3a5f] bg-[#111827]"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-[#1e3a5f]">
+          {[
+            { value: stat1, label: "Hours saved per week" },
+            { value: stat2, label: "Faster lead response" },
+            { value: stat3, label: "Lead-to-conversion increase" },
+            { value: stat4, label: "Repetitive tasks eliminated" },
+          ].map((stat, i) => (
+            <div key={i} className="flex flex-col items-center py-6 sm:py-8">
+              <span className="text-2xl sm:text-3xl font-extrabold text-white">{stat.value}</span>
+              <span className="mt-1 text-xs sm:text-sm text-[#94a3b8]">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── How It Works timeline ─── */
+
+const howItWorksSteps = [
+  { num: "01", title: "Select & Quote", icon: "🛒", desc: "You browse solutions, build your stack, and submit a quote. No commitment needed.", badge: "Day 1" },
+  { num: "02", title: "Scoping Call", icon: "📞", desc: "We schedule a 45-min call to confirm requirements, timeline, and project scope.", badge: "Day 2–3" },
+  { num: "03", title: "We Build", icon: "⚙️", desc: "Our team builds your automation with progress updates throughout.", badge: "Day 4–14" },
+  { num: "04", title: "Handover & Training", icon: "🎓", desc: "We deliver, train your team live, and hand over full documentation.", badge: "Day 15" },
+];
+
+function HowItWorks() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [triggered, setTriggered] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTriggered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const ConnectorArrow = () => (
+    <svg viewBox="0 0 40 24" fill="none" style={{ width: "40px", height: "24px" }}>
+      <path
+        d="M0 12 C10 12, 14 4, 20 4 S30 12, 40 12"
+        stroke="url(#arrow-grad)"
+        strokeWidth="2"
+        fill="none"
+      />
+      <polygon points="36,8 40,12 36,16" fill="#0ea5e9" />
+      <defs>
+        <linearGradient id="arrow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#185FA5" />
+          <stop offset="100%" stopColor="#0ea5e9" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+
+  const ContentBlock = ({ step, delay }: { step: typeof howItWorksSteps[number]; delay: string }) => (
+    <div
+      className={`timeline-content text-center ${triggered ? "shown" : ""}`}
+      style={{ transitionDelay: delay }}
+    >
+      <div style={{ fontSize: "28px", marginBottom: "8px" }}>{step.icon}</div>
+      <h3 className="font-heading font-bold text-white" style={{ fontSize: "16px", marginBottom: "4px" }}>{step.title}</h3>
+      <p className="leading-relaxed text-[#cbd5e1]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
+      <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+        {step.badge}
+      </span>
+    </div>
+  );
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16" ref={sectionRef}>
+      <SectionLabel label="Process" title="From Quote to Go-Live in 4 Steps" />
+
+      {/* ── Desktop: 3-row grid with zigzag content ── */}
+      <div className="hidden md:block mt-12">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr auto 1fr auto 1fr",
+            gridTemplateRows: "220px 80px 220px",
+            alignItems: "stretch",
+          }}
+        >
+          {/* ── Row 1: top content ── */}
+          {howItWorksSteps.map((step, i) => {
+            const isAbove = i % 2 === 0;
+            const contentDelay = `${0.8 + i * 0.2}s`;
+            return (
+              <div
+                key={`top-${step.num}`}
+                style={{
+                  gridColumn: i * 2 + 1,
+                  gridRow: 1,
+                  display: "flex",
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                  paddingBottom: "12px",
+                }}
+              >
+                {isAbove ? <ContentBlock step={step} delay={contentDelay} /> : null}
+              </div>
+            );
+          })}
+
+          {/* ── Row 2: nodes + connecting line ── */}
+          {/* Horizontal line behind nodes */}
+          <div
+            style={{
+              gridColumn: "1 / -1",
+              gridRow: 2,
+              display: "flex",
+              alignItems: "center",
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                left: "12.5%",
+                right: "12.5%",
+                height: "2px",
+                background: "linear-gradient(90deg, #185FA5, #0ea5e9)",
+                boxShadow: "0 0 8px rgba(14,165,233,0.4)",
+                opacity: triggered ? 1 : 0,
+                transition: "opacity 0.8s ease-out 0.3s",
+              }}
+            />
+          </div>
+
+          {/* Nodes on row 2 */}
+          {howItWorksSteps.map((step, i) => {
+            const nodeDelay = `${0.4 + i * 0.2}s`;
+            return (
+              <div
+                key={`node-${step.num}`}
+                style={{
+                  gridColumn: i * 2 + 1,
+                  gridRow: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 10,
+                }}
+              >
+                <div
+                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    animationDelay: triggered ? nodeDelay : undefined,
+                  }}
+                >
+                  {step.num}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Connector arrows between nodes on row 2 */}
+          {[0, 1, 2].map((i) => (
+            <div
+              key={`arrow-${i}`}
+              style={{
+                gridColumn: i * 2 + 2,
+                gridRow: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: triggered ? 1 : 0,
+                transition: `opacity 0.4s ease-out ${0.6 + i * 0.2}s`,
+              }}
+            >
+              <ConnectorArrow />
+            </div>
+          ))}
+
+          {/* ── Row 3: bottom content ── */}
+          {howItWorksSteps.map((step, i) => {
+            const isBelow = i % 2 === 1;
+            const contentDelay = `${0.8 + i * 0.2}s`;
+            return (
+              <div
+                key={`bottom-${step.num}`}
+                style={{
+                  gridColumn: i * 2 + 1,
+                  gridRow: 3,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "center",
+                  paddingTop: "12px",
+                }}
+              >
+                {isBelow ? <ContentBlock step={step} delay={contentDelay} /> : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Mobile: vertical timeline ── */}
+      <div className="md:hidden mt-10">
+        <div className="relative ml-6 pl-8">
+          {/* Vertical line */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: "2px",
+              background: "linear-gradient(180deg, #185FA5, #0ea5e9)",
+              boxShadow: "0 0 8px rgba(14,165,233,0.4)",
+              opacity: triggered ? 1 : 0,
+              transition: "opacity 0.8s ease-out",
+            }}
+          />
+          {howItWorksSteps.map((step, i) => {
+            const nodeDelay = `${0.2 + i * 0.2}s`;
+            const contentDelay = `${0.4 + i * 0.2}s`;
+            return (
+              <div key={step.num} className="relative pb-10 last:pb-0">
+                {/* Node */}
+                <div
+                  className={`timeline-node absolute top-0 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-xs font-bold text-white z-10 ${triggered ? "popped" : ""}`}
+                  style={{ left: "-2.25rem", animationDelay: triggered ? nodeDelay : undefined }}
+                >
+                  {step.num}
+                </div>
+                {/* Content */}
+                <div
+                  className={`timeline-content ${triggered ? "shown" : ""}`}
+                  style={{ transitionDelay: contentDelay }}
+                >
+                  <div style={{ fontSize: "22px", marginBottom: "4px" }}>{step.icon}</div>
+                  <h3 className="font-heading text-sm font-bold text-white mb-1">{step.title}</h3>
+                  <p className="text-xs leading-relaxed text-[#cbd5e1] mb-2">{step.desc}</p>
+                  <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+                    {step.badge}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Testimonial carousel ─── */
+
+const testimonials = [
+  { quote: "Jeremy and the team built us an automated lead follow-up system in under a week. We went from missing leads to closing 30% more deals.", name: "Marcus Tan", title: "Director, Pinnacle Advisory Group" },
+  { quote: "The AI customer support agent handles 80% of our inbound queries automatically. Our team finally has time to focus on real work.", name: "Sarah Lim", title: "Operations Manager, BrightSpace Interior Design" },
+  { quote: "We were skeptical about automation but the onboarding was smooth and the results were immediate. Highly recommend.", name: "David Ng", title: "Founder, SwiftFreight Logistics" },
+  { quote: "Our invoice processing used to take half a day. Now it's fully automated and done in minutes. The ROI was immediate.", name: "Priya Mehta", title: "CFO, Horizon Trading Pte Ltd" },
+  { quote: "The CRM they built for us is exactly what we needed — simple, fast, and our whole sales team actually uses it.", name: "Jason Wong", title: "Sales Director, Apex Property Group" },
+  { quote: "We now have an AI agent answering customer WhatsApp messages 24/7. Response times went from hours to seconds.", name: "Michelle Ong", title: "Head of Operations, FreshBox Delivery" },
+  { quote: "They automated our entire onboarding process. New clients go from sign-up to fully set up without any manual work from our team.", name: "Raymond Koh", title: "CEO, Velocity Consulting" },
+  { quote: "The email nurture sequence they built converts at 3x our old manual process. We didn't expect results this fast.", name: "Cheryl Tan", title: "Marketing Manager, GreenLeaf Wellness" },
+  { quote: "Our operations team used to spend 2 hours daily on data entry. That's completely gone now. Best investment we made this year.", name: "Bernard Lim", title: "COO, PrimePack Industries" },
+  { quote: "The AI knowledge base agent answers staff HR questions instantly. Our HR team went from firefighting to actual strategic work.", name: "Angela Yeo", title: "HR Director, Nexus Capital Group" },
+  { quote: "We had zero technical knowledge going in. The team made everything simple and trained our staff thoroughly. Couldn't ask for more.", name: "Tommy Goh", title: "Owner, Tommy's Kitchen Group" },
+  { quote: "The automated reporting dashboard saves our management team 3 hours every Monday morning. Data is just there when we need it.", name: "Stephanie Chan", title: "Business Analyst, BlueStar Logistics" },
+  { quote: "The WhatsApp appointment reminder system reduced our no-show rate by 40%. Simple idea, massive impact on revenue.", name: "Dr. Kevin Loh", title: "Clinic Director, Loh Medical Centre" },
+  { quote: "We were losing deals because follow-ups fell through the cracks. The automated pipeline fixed that completely within the first week.", name: "Darren Chia", title: "Business Development Manager, Titan Solutions" },
+  { quote: "The social media automation alone saved us 10 hours a week. Our content is consistent now and engagement has never been better.", name: "Felicia Ng", title: "Brand Manager, Lumière Aesthetics" },
+];
+
+function TestimonialCarousel() {
+  const doubled = [...testimonials, ...testimonials];
+  const trackRef = useRef<HTMLDivElement>(null);
+  const headingRef = useScrollReveal();
+
+  const pause = () => {
+    if (trackRef.current) trackRef.current.style.animationPlayState = "paused";
+  };
+  const resume = () => {
+    if (trackRef.current) trackRef.current.style.animationPlayState = "running";
+  };
+
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
+      <div ref={headingRef}>
+        <div data-reveal-id="testimonial-heading" className={revealedIds.has("testimonial-heading") ? "visible" : "reveal"}>
+          <SectionLabel label="Testimonials" title="What Our Clients Say" />
+        </div>
+      </div>
+      <div
+        onMouseEnter={pause}
+        onMouseLeave={resume}
+        style={{
+          overflow: "hidden",
+          width: "100%",
+          WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+          maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+        }}
+      >
+        <div
+          ref={trackRef}
+          id="marquee-track"
+          style={{
+            display: "flex",
+            flexWrap: "nowrap",
+            width: "max-content",
+            animation: "marquee 120s linear infinite",
+            willChange: "transform",
+          }}
+        >
+          {doubled.map((t, i) => (
+            <div
+              key={i}
+              style={{
+                flexShrink: 0,
+                width: "360px",
+                marginRight: "24px",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  borderRadius: "12px",
+                  backgroundColor: "#111827",
+                  border: "2px solid #1e3a5f",
+                  borderLeft: "4px solid #0ea5e9",
+                  padding: "20px 24px",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div style={{ marginBottom: "12px", color: "#fbbf24", fontSize: "14px", letterSpacing: "0.05em" }}>★★★★★</div>
+                <p style={{ marginBottom: "16px", flex: 1, fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, color: "#e2e8f0" }}>
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <p style={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>{t.name}</p>
+                <p style={{ fontSize: "12px", color: "#94a3b8" }}>{t.title}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── Main page ─── */
 
 export default function Home() {
@@ -434,6 +910,9 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [quoteSubmitted, setQuoteSubmitted] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [mobileNav, setMobileNav] = useState(false);
+  const [supportModal, setSupportModal] = useState<number | null>(null);
 
   const filtered =
     activeCategory === "All"
@@ -458,7 +937,10 @@ export default function Home() {
   }, []);
 
   const packagesRef = useScrollReveal();
+  const supportRef = useScrollReveal();
   const solutionsRef = useScrollReveal();
+  const faqRef = useScrollReveal(80);
+  const footerRef = useScrollReveal();
   const navScrolled = useNavScroll();
   const pricePop = usePricePop(total);
 
@@ -470,13 +952,77 @@ export default function Home() {
           <span className="font-heading text-lg font-bold text-white tracking-tight">
             Jem <span className="text-[#0ea5e9]">AI Solutions</span>
           </span>
-          <a
-            href="#solutions"
-            className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-5 py-2 text-sm font-semibold text-white transition"
-          >
-            Get Started
-          </a>
+
+          {/* Desktop nav links */}
+          <div className="hidden items-center gap-6 md:flex">
+            {[
+              { label: "Packages", href: "#packages" },
+              { label: "Solutions", href: "#solutions" },
+              { label: "Support", href: "#support" },
+              { label: "FAQ", href: "#faq" },
+            ].map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-[#e2e8f0] transition hover:text-[#0ea5e9] hover:underline hover:underline-offset-4"
+              >
+                {link.label}
+              </a>
+            ))}
+            <a
+              href="#solutions"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-5 py-2 text-sm font-semibold text-white transition"
+            >
+              Get Started
+            </a>
+          </div>
+
+          {/* Mobile hamburger */}
+          <div className="flex items-center gap-3 md:hidden">
+            <a
+              href="#solutions"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-4 py-2 text-sm font-semibold text-white transition"
+            >
+              Get Started
+            </a>
+            <button
+              onClick={() => setMobileNav(!mobileNav)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1e3a5f] text-[#e2e8f0] transition hover:border-[#0ea5e9]/40 hover:text-white"
+              aria-label="Toggle menu"
+            >
+              {mobileNav ? (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile dropdown */}
+        {mobileNav && (
+          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#1e3a5f] bg-[#111827]/95 backdrop-blur-lg p-4 md:hidden">
+            {[
+              { label: "Packages", href: "#packages" },
+              { label: "Solutions", href: "#solutions" },
+              { label: "Support", href: "#support" },
+              { label: "FAQ", href: "#faq" },
+            ].map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileNav(false)}
+                className="block rounded-lg px-4 py-3 text-sm font-medium text-[#e2e8f0] transition hover:bg-[#1e3a5f]/30 hover:text-[#0ea5e9]"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
       </nav>
 
       {/* ── Hero ── */}
@@ -491,7 +1037,7 @@ export default function Home() {
           <div className="animate-hero-delay mx-auto mt-4 w-48 sm:w-64">
             <div className="glow-line" />
           </div>
-          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-gray-400 sm:text-lg">
+          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#94a3b8] sm:text-lg">
             Transparent pricing. Expert delivery. Select what you need.
           </p>
           <div className="animate-hero-delay-2 badge-glow mt-4 inline-flex items-center gap-2 rounded-full border border-[#0ea5e9]/20 bg-[#0ea5e9]/5 px-4 py-2 text-xs font-medium text-[#0ea5e9] sm:text-sm">
@@ -501,8 +1047,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Pain Points ── */}
+      <PainPointsSection />
+
+      {/* ── How It Works ── */}
+      <HowItWorks />
+
       {/* ── Packages ── */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16" ref={packagesRef}>
+      <section id="packages" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16" ref={packagesRef}>
         <SectionLabel label="Packages" title="Start with a Bundle" />
         <div className="grid gap-5 md:grid-cols-3">
           {packages.map((pkg) => {
@@ -523,9 +1075,9 @@ export default function Home() {
                 <div className="p-5">
                   <ul className="mb-4 space-y-1.5">
                     {pkgSolutions.map((s) => (
-                      <li key={s.id} className="flex items-center gap-2 text-xs text-gray-400 sm:text-sm">
+                      <li key={s.id} className="flex items-center gap-2 text-xs text-[#94a3b8] sm:text-sm">
                         <span className="text-sm sm:text-base">{s.icon}</span>
-                        <span className="text-gray-300">{s.name}</span>
+                        <span className="text-[#cbd5e1]">{s.name}</span>
                       </li>
                     ))}
                   </ul>
@@ -533,7 +1085,7 @@ export default function Home() {
                     <span className="text-xl font-bold text-white sm:text-2xl">
                       ${pkgTotal.toLocaleString()}
                     </span>
-                    <span className="text-xs text-gray-500">{mandays} mandays</span>
+                    <span className="text-xs text-[#94a3b8]">{mandays} mandays</span>
                   </div>
                   <button
                     onClick={() => {
@@ -563,56 +1115,163 @@ export default function Home() {
       </section>
 
       {/* ── Support & Training ── */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
-        <SectionLabel label="Support" title="We're With You After Launch" />
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            {
-              icon: "🎓",
-              title: "End-User & Admin Training",
-              description:
-                "Formal training programs for both new users and advanced admins. Includes different learning formats to help your team stay current and keep getting value from your systems over time.",
-              price: "From $1,500",
-            },
-            {
-              icon: "🛟",
-              title: "Ongoing Customer Support",
-              description:
-                "Continued support after go-live through flexible Success Plans. Choose from tiered packages that include expertise, guidance, and education — higher tiers include a dedicated Technical Account Manager.",
-              price: "From $800/month",
-            },
-            {
-              icon: "🚀",
-              title: "Post-Deployment Adoption Help",
-              description:
-                "Hands-on adoption support beyond technical cutover — improving adoption, refining workflows, adding scope, and stabilising processes after your team starts using the system.",
-              price: "From $2,000",
-            },
-          ].map((card) => (
-            <div
-              key={card.title}
-              className="card-idle group flex flex-col rounded-xl border-2 border-[#1e3a5f] bg-[#111827] p-5 sm:p-6"
-            >
-              <div className="mb-3 text-3xl">{card.icon}</div>
-              <h3 className="font-heading mb-2 text-base font-semibold text-white">
-                {card.title}
-              </h3>
-              <p className="mb-5 flex-1 text-sm leading-relaxed text-gray-500">
-                {card.description}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="price-glow text-sm font-bold">{card.price}</span>
-                <button
-                  onClick={() => setShowModal(true)}
-                  className="rounded-lg border border-[#0ea5e9]/30 px-4 py-2 text-sm font-semibold text-[#0ea5e9] transition hover:bg-[#0ea5e9]/10 hover:border-[#0ea5e9]/60 hover:shadow-[0_0_12px_rgba(14,165,233,0.25)]"
-                >
-                  Learn More
-                </button>
+      {(() => {
+        const supportCards = [
+          {
+            icon: "🎓",
+            title: "End-User & Admin Training",
+            description:
+              "Formal training programs for both new users and advanced admins. Includes different learning formats to help your team stay current and keep getting value from your systems over time.",
+            price: "From $1,500",
+            items: [
+              "Half-day or full-day training sessions (on-site or remote)",
+              "Separate tracks for end users and system administrators",
+              "Hands-on walkthroughs of your specific automation setup",
+              "Training materials and recorded session provided",
+              "Follow-up Q&A session included",
+            ],
+            bestFor: "Teams of 5–50 people going live on a new system",
+            timeline: "Typically scheduled within 1 week of project completion",
+          },
+          {
+            icon: "🛟",
+            title: "Ongoing Customer Support",
+            description:
+              "Continued support after go-live through flexible Success Plans. Choose from tiered packages that include expertise, guidance, and education — higher tiers include a dedicated Technical Account Manager.",
+            price: "From $800/month",
+            items: [
+              "Dedicated support via WhatsApp or email (response within 4 hours)",
+              "Monthly system health check and optimisation review",
+              "Bug fixes and minor adjustments included",
+              "Access to our knowledge base and video library",
+              "Higher tiers include a named Technical Account Manager",
+            ],
+            planOptions: "Basic ($800/month), Standard ($1,500/month), Premium ($2,500/month)",
+            commitment: "3 months",
+          },
+          {
+            icon: "🚀",
+            title: "Post-Deployment Adoption Help",
+            description:
+              "Hands-on adoption support beyond technical cutover — improving adoption, refining workflows, adding scope, and stabilising processes after your team starts using the system.",
+            price: "From $2,000",
+            items: [
+              "4-week hands-on adoption programme after go-live",
+              "Weekly check-in calls with your team",
+              "Usage analytics review to identify adoption gaps",
+              "Process refinement based on real-world usage feedback",
+              "Additional staff training if needed",
+              "Scope expansion support (adding new automations to existing setup)",
+            ],
+            bestFor: "Companies who want to maximise ROI after launch",
+            timeline: "Starts 1–2 weeks after project go-live",
+          },
+        ];
+        const activeCard = supportModal !== null ? supportCards[supportModal] : null;
+
+        return (
+          <>
+            <section id="support" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+              <SectionLabel label="Support" title="We're With You After Launch" />
+              <div className="grid gap-5 md:grid-cols-3" ref={supportRef}>
+                {supportCards.map((card, i) => (
+                  <div
+                    key={card.title}
+                    data-reveal-id={`support-${i}`}
+                    className={`${revealedIds.has(`support-${i}`) ? "visible" : "reveal"} card-idle group flex flex-col rounded-xl border-2 border-[#1e3a5f] bg-[#111827] p-5 sm:p-6`}
+                  >
+                    <div className="mb-3 text-3xl">{card.icon}</div>
+                    <h3 className="font-heading mb-2 text-base font-semibold text-white">
+                      {card.title}
+                    </h3>
+                    <p className="mb-5 flex-1 text-sm leading-relaxed text-[#cbd5e1]">
+                      {card.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="price-glow text-sm font-bold">{card.price}</span>
+                      <button
+                        onClick={() => setSupportModal(i)}
+                        className="rounded-lg border border-[#0ea5e9]/30 px-4 py-2 text-sm font-semibold text-[#0ea5e9] transition hover:bg-[#0ea5e9]/10 hover:border-[#0ea5e9]/60 hover:shadow-[0_0_12px_rgba(14,165,233,0.25)]"
+                      >
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            </section>
+
+            {/* Support detail modal */}
+            {activeCard && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)", animation: "fade-in 0.2s ease-out" }}
+                onClick={() => setSupportModal(null)}
+              >
+                <style>{`@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }`}</style>
+                <div
+                  className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-[#111827] p-6 shadow-2xl sm:p-8"
+                  style={{ animation: "fade-in 0.2s ease-out" }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setSupportModal(null)}
+                    className="absolute right-4 top-4 text-2xl text-gray-500 hover:text-gray-300 transition"
+                  >
+                    ✕
+                  </button>
+
+                  <div className="text-4xl mb-4">{activeCard.icon}</div>
+                  <h2 className="font-heading text-xl font-bold text-white sm:text-2xl mb-1">
+                    {activeCard.title}
+                  </h2>
+                  <p className="text-lg font-bold text-[#0ea5e9] mb-6">{activeCard.price}</p>
+
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">What&apos;s Included</h3>
+                  <ul className="mb-6 space-y-2">
+                    {activeCard.items.map((item, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-[#cbd5e1]">
+                        <span className="mt-0.5 text-[#0ea5e9]">✓</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="space-y-3 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] p-4">
+                    {"bestFor" in activeCard && (
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Best for</span>
+                        <p className="text-sm text-[#cbd5e1]">{activeCard.bestFor}</p>
+                      </div>
+                    )}
+                    {"planOptions" in activeCard && (
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Plan options</span>
+                        <p className="text-sm text-[#cbd5e1]">{activeCard.planOptions}</p>
+                      </div>
+                    )}
+                    {"commitment" in activeCard && (
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Minimum commitment</span>
+                        <p className="text-sm text-[#cbd5e1]">{activeCard.commitment}</p>
+                      </div>
+                    )}
+                    {"timeline" in activeCard && (
+                      <div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Timeline</span>
+                        <p className="text-sm text-[#cbd5e1]">{activeCard.timeline}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
+
+      {/* ── Testimonials ── */}
+      <TestimonialCarousel />
 
       {/* ── Solutions ── */}
       <section id="solutions" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
@@ -632,7 +1291,7 @@ export default function Home() {
                     className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
                       isActive
                         ? "pill-active text-white shadow-lg shadow-[#0ea5e9]/10"
-                        : "pill-inactive border border-[#1e3a5f] text-gray-400 hover:border-[#0ea5e9]/40 hover:text-gray-200"
+                        : "pill-inactive border border-[#1e3a5f] text-[#94a3b8] hover:border-[#0ea5e9]/40 hover:text-gray-200"
                     }`}
                   >
                     {cat}
@@ -665,11 +1324,11 @@ export default function Home() {
                     <h3 className="font-heading mb-1.5 text-sm font-semibold text-white sm:text-base">
                       {s.name}
                     </h3>
-                    <p className="mb-4 flex-1 text-xs leading-relaxed text-gray-500 sm:text-sm">
+                    <p className="mb-4 flex-1 text-xs leading-relaxed text-[#cbd5e1] sm:text-sm">
                       {s.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-600">
+                      <span className="text-xs font-medium text-[#94a3b8]">
                         {s.mandays} mandays
                       </span>
                       <span className="price-glow text-sm font-bold sm:text-base">
@@ -697,7 +1356,7 @@ export default function Home() {
                   <h2 className="font-heading mb-2 text-xl font-bold text-white">
                     Quote Requested!
                   </h2>
-                  <p className="mb-6 text-sm text-gray-400">
+                  <p className="mb-6 text-sm text-[#94a3b8]">
                     We&apos;ll be in touch within 24 hours with your custom proposal.
                   </p>
                   <button
@@ -720,7 +1379,7 @@ export default function Home() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                       </div>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-[#94a3b8]">
                         Click on solutions to add them to your quote.
                       </p>
                     </div>
@@ -732,13 +1391,13 @@ export default function Home() {
                             <div className="flex items-start gap-2">
                               <span className="text-lg">{s.icon}</span>
                               <div>
-                                <p className="text-sm font-medium text-white">{s.name}</p>
-                                <p className="text-xs text-gray-500">{s.mandays} mandays</p>
+                                <p className="text-sm font-medium text-[#e2e8f0]">{s.name}</p>
+                                <p className="text-xs text-[#94a3b8]">{s.mandays} mandays</p>
                               </div>
                             </div>
                             <button
                               onClick={() => toggle(s.id)}
-                              className="shrink-0 text-sm text-gray-600 hover:text-red-400"
+                              className="shrink-0 text-sm text-[#64748b] hover:text-red-400"
                             >
                               ✕
                             </button>
@@ -747,13 +1406,13 @@ export default function Home() {
                       </div>
 
                       <div className="border-t border-[#1e3a5f]/50 pt-4">
-                        <div className="mb-1 flex justify-between text-sm text-gray-500">
+                        <div className="mb-1 flex justify-between text-sm text-[#94a3b8]">
                           <span>Total mandays</span>
                           <span>{totalMandays}</span>
                         </div>
                         {discounted && (
                           <>
-                            <div className="mb-1 flex justify-between text-sm text-gray-600 line-through">
+                            <div className="mb-1 flex justify-between text-sm text-[#64748b] line-through">
                               <span>Subtotal</span>
                               <span>${subtotal.toLocaleString()}</span>
                             </div>
@@ -786,18 +1445,70 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      <section id="faq" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+        <SectionLabel label="FAQ" title="Frequently Asked Questions" />
+        <div className="mx-auto max-w-3xl divide-y divide-[#1e3a5f] rounded-xl border border-[#1e3a5f] bg-[#111827]" ref={faqRef}>
+          {[
+            {
+              q: "How long does it take to build my automation?",
+              a: "Depends on complexity. A simple email automation takes 2–3 days. A full CRM or AI agent typically takes 1–2 weeks. You'll get a clear timeline before we start.",
+            },
+            {
+              q: "Do you work with small businesses?",
+              a: "Yes, most of our clients are Singapore SMEs. Our solutions are built to be practical and affordable, not over-engineered.",
+            },
+            {
+              q: "What tools and platforms do you use?",
+              a: "We use the best AI and automation technology available today — including Claude AI for intelligent agents, and purpose-built platforms for workflows, CRMs, and integrations. We choose the right tool for your specific business needs and budget.",
+            },
+            {
+              q: "What happens after the build is done?",
+              a: "We hand over everything with full documentation and training. You can also opt into one of our ongoing support plans.",
+            },
+            {
+              q: "Do I need technical knowledge to use what you build?",
+              a: "No. We build for non-technical users. If you can use WhatsApp, you can use what we build.",
+            },
+            {
+              q: "How do I get started?",
+              a: "Select your solutions above and click Request Quote. We'll respond within 24 hours to schedule a scoping call.",
+            },
+          ].map((faq, i) => (
+            <button
+              key={i}
+              data-reveal-id={`faq-${i}`}
+              onClick={() => setOpenFaq(openFaq === i ? null : i)}
+              className={`${revealedIds.has(`faq-${i}`) ? "visible" : "reveal"} w-full text-left px-5 py-4 sm:px-6 sm:py-5 transition`}
+            >
+              <div className="flex items-center justify-between gap-4">
+                <h3 className="text-sm font-semibold text-white sm:text-base">{faq.q}</h3>
+                <span className="shrink-0 text-lg text-[#0ea5e9]">
+                  {openFaq === i ? "−" : "+"}
+                </span>
+              </div>
+              {openFaq === i && (
+                <p className="mt-3 text-sm leading-relaxed text-[#cbd5e1]">{faq.a}</p>
+              )}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* ── Footer ── */}
       <footer className="border-t border-[#1e3a5f]/30 bg-[#0a0f1e]">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div>
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left" ref={footerRef}>
+          <div data-reveal-id="footer-brand" className={revealedIds.has("footer-brand") ? "visible" : "reveal"}>
             <span className="font-heading text-lg font-bold text-white tracking-tight">
               Jem <span className="text-[#0ea5e9]">AI Solutions</span>
             </span>
-            <p className="mt-1 text-sm text-gray-500">Automation solutions, delivered by experts.</p>
+            <p className="mt-1 text-sm text-[#94a3b8]">Automation solutions, delivered by experts.</p>
           </div>
-          <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} Jem AI Solutions. All rights reserved.
-          </p>
+          <div data-reveal-id="footer-copy" className={revealedIds.has("footer-copy") ? "visible" : "reveal"}>
+            <p className="text-sm text-[#94a3b8]">
+              &copy; {new Date().getFullYear()} Jem AI Solutions. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
 
@@ -806,7 +1517,7 @@ export default function Home() {
         <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#1e3a5f] bg-[#111827]/95 p-4 backdrop-blur-lg lg:hidden">
           <div className="mx-auto flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-[#94a3b8]">
                 {selected.length} solution{selected.length !== 1 && "s"} selected
               </p>
               <p className="text-lg font-bold text-white">

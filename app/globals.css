@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --bg-primary: #0a0f1e;
   --bg-card: #111827;
@@ -292,6 +296,40 @@ body {
 
 
 /* ═══════════════════════════════════════════════
+   HOW IT WORKS — timeline
+   ═══════════════════════════════════════════════ */
+
+@keyframes node-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes node-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(14,165,233,0.3), 0 0 20px rgba(24,95,165,0.15); }
+  50%      { box-shadow: 0 0 16px rgba(14,165,233,0.6), 0 0 36px rgba(24,95,165,0.3); }
+}
+
+.timeline-node {
+  transform: scale(0);
+  opacity: 0;
+}
+.timeline-node.popped {
+  animation: node-pop 0.4s ease-out forwards, node-pulse 2s 0.4s ease-in-out infinite alternate;
+}
+
+/* Content block */
+.timeline-content {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+.timeline-content.shown {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ═══════════════════════════════════════════════
    6. SCROLL REVEAL
    ═══════════════════════════════════════════════ */
 
@@ -303,7 +341,7 @@ body {
   opacity: 0;
 }
 .reveal.visible {
-  animation: reveal-up 0.5s ease-out both;
+  animation: reveal-up 0.6s ease-out both;
 }
 .visible:not(.reveal) {
   opacity: 1;
@@ -361,6 +399,7 @@ body {
   animation: label-breathe 4s ease-in-out infinite;
   text-shadow: 0 0 10px rgba(14,165,233,0.5);
 }
+
 
 
 /* ── Scrollbar ── */
