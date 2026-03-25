@@ -972,6 +972,12 @@ export default function Home() {
               </a>
             ))}
             <a
+              href="/web-services"
+              className="text-sm font-medium text-[#e2e8f0] transition hover:text-[#0ea5e9] hover:underline hover:underline-offset-4"
+            >
+              Web Services
+            </a>
+            <a
               href="#solutions"
               className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-5 py-2 text-sm font-semibold text-white transition"
             >
@@ -1023,6 +1029,13 @@ export default function Home() {
                 {link.label}
               </a>
             ))}
+            <a
+              href="/web-services"
+              onClick={() => setMobileNav(false)}
+              className="block rounded-lg px-4 py-3 text-sm font-medium text-[#e2e8f0] transition hover:bg-[#1e3a5f]/30 hover:text-[#0ea5e9]"
+            >
+              Web Services
+            </a>
           </div>
         )}
       </nav>
