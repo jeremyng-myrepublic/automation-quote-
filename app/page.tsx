@@ -203,6 +203,7 @@ function QuoteModal({
   totalMandays: totalDays,
   total,
   discounted,
+  subtotal,
   onClose,
   onSuccess,
 }: {
@@ -210,11 +211,14 @@ function QuoteModal({
   totalMandays: number;
   total: number;
   discounted: boolean;
+  subtotal: number;
   onClose: () => void;
   onSuccess: () => void;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [safView, setSafView] = useState<{ pdfBase64: string; email: string } | null>(null);
+  const [loadingMsg, setLoadingMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -224,11 +228,21 @@ function QuoteModal({
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    const payload = {
-      name: formData.get("name") as string,
-      company: formData.get("company") as string,
-      email: formData.get("email") as string,
-      phone: (formData.get("phone") as string) || undefined,
+    const nameVal = formData.get("name") as string;
+    const companyVal = formData.get("company") as string;
+    const emailVal = formData.get("email") as string;
+    const phoneVal = (formData.get("phone") as string) || "";
+    const designationVal = formData.get("designation") as string;
+    const uenVal = formData.get("uen") as string;
+    const addressVal = formData.get("address") as string;
+    const postalCodeVal = formData.get("postalCode") as string;
+    const contractLengthVal = formData.get("contractLength") as string;
+
+    const quotePayload = {
+      name: nameVal,
+      company: companyVal,
+      email: emailVal,
+      phone: phoneVal || undefined,
       referral_source: formData.get("referral_source") as string,
       notes: (formData.get("notes") as string) || undefined,
       selected_solutions: selected.map((s) => ({
@@ -243,25 +257,127 @@ function QuoteModal({
     };
 
     try {
+      // Step 1: Submit quote
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(quotePayload),
       });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Something went wrong");
       }
-      onSuccess();
+
+      // Step 2: Generate SAF
+      setLoadingMsg("Generating your Service Application Form...");
+      const safPayload = {
+        name: nameVal,
+        company: companyVal,
+        email: emailVal,
+        phone: phoneVal,
+        designation: designationVal,
+        uen: uenVal,
+        address: addressVal,
+        postalCode: postalCodeVal,
+        contractLength: contractLengthVal,
+        selectedSolutions: selected.map((s) => ({
+          name: s.name,
+          mandays: s.mandays,
+          price: s.mandays * MANDAY_RATE,
+        })),
+        totalDays: totalDays,
+        subtotal: subtotal,
+        discountAmount: discounted ? Math.round(subtotal * BUNDLE_DISCOUNT) : 0,
+        finalPrice: total,
+      };
+
+      const safRes = await fetch("/api/generate-saf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(safPayload),
+      });
+
+      if (!safRes.ok) {
+        const safData = await safRes.json();
+        throw new Error(safData.error || "Failed to generate SAF");
+      }
+
+      const safData = await safRes.json();
+      setSafView({ pdfBase64: safData.pdfBase64, email: emailVal });
+      setLoadingMsg("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit quote");
+      setLoadingMsg("");
     } finally {
       setSubmitting(false);
     }
   }
 
+  function handleDownload() {
+    if (!safView) return;
+    const link = document.createElement("a");
+    link.href = `data:application/pdf;base64,${safView.pdfBase64}`;
+    link.download = "Jem-AI-Solutions-SAF.pdf";
+    link.click();
+  }
+
   const inputCls =
     "w-full rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] px-4 py-2.5 text-white placeholder-gray-500 outline-none transition focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20";
+
+  // ── SAF Ready View ──
+  if (safView) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-[#111827] p-6 shadow-2xl sm:p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="font-heading text-xl font-bold text-white sm:text-2xl flex items-center gap-2">
+                Your SAF is Ready
+                <span className="text-emerald-400">&#10003;</span>
+              </h2>
+              <p className="text-sm text-[#94a3b8] mt-1">
+                A copy has been sent to <span className="text-[#0ea5e9]">{safView.email}</span>. Review below and download to sign.
+              </p>
+            </div>
+            <button onClick={() => { setSafView(null); onSuccess(); }} className="text-2xl text-gray-500 hover:text-gray-300 shrink-0 ml-4">
+              ✕
+            </button>
+          </div>
+
+          <div className="mb-6 rounded-lg border border-[#1e3a5f] overflow-hidden">
+            <iframe
+              src={`data:application/pdf;base64,${safView.pdfBase64}`}
+              width="100%"
+              height="600"
+              style={{ border: "none", background: "#fff" }}
+              title="Service Application Form Preview"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleDownload}
+              className="flex-1 rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20"
+            >
+              Download PDF
+            </button>
+            <a
+              href={`mailto:${process.env.NEXT_PUBLIC_NOTIFY_EMAIL || "hello@jemaisolutions.com"}?subject=SAF Change Request&body=Hi, I would like to request changes to my SAF.`}
+              className="flex-1 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] py-3 font-semibold text-[#94a3b8] text-center transition hover:border-[#0ea5e9]/40 hover:text-white"
+            >
+              Request Changes
+            </a>
+            <button
+              onClick={() => { setSafView(null); onSuccess(); }}
+              className="flex-1 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] py-3 font-semibold text-[#94a3b8] transition hover:border-[#0ea5e9]/40 hover:text-white"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -289,6 +405,13 @@ function QuoteModal({
           </p>
         </div>
 
+        {loadingMsg && (
+          <div className="mb-4 rounded-lg border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 p-4 text-center">
+            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[#0ea5e9] border-t-transparent mr-2 align-middle" />
+            <span className="text-sm text-[#0ea5e9]">{loadingMsg}</span>
+          </div>
+        )}
+
         {error && (
           <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
             {error}
@@ -309,8 +432,37 @@ function QuoteModal({
             <input required name="email" type="email" className={inputCls} placeholder="john@acme.com" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Phone</label>
-            <input name="phone" type="tel" className={inputCls} placeholder="+1 (555) 000-0000" />
+            <label className="mb-1 block text-sm font-medium text-gray-300">Phone *</label>
+            <input required name="phone" type="tel" className={inputCls} placeholder="+65 9123 4567" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-300">Designation / Job Title *</label>
+            <input required name="designation" type="text" className={inputCls} placeholder="Managing Director" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-300">UEN (Unique Entity Number) *</label>
+            <input required name="uen" type="text" className={inputCls} placeholder="201912345A" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-300">Registered Address *</label>
+            <input required name="address" type="text" className={inputCls} placeholder="123 Business Park Drive #01-01" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-300">Postal Code *</label>
+            <input required name="postalCode" type="text" className={inputCls} placeholder="123456" />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-300">Contract Length *</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="contractLength" value="24" required className="accent-[#0ea5e9]" defaultChecked />
+                <span className="text-sm text-[#e2e8f0]">24 Months</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="contractLength" value="36" className="accent-[#0ea5e9]" />
+                <span className="text-sm text-[#e2e8f0]">36 Months</span>
+              </label>
+            </div>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-300">How did you hear about us? *</label>
@@ -330,7 +482,7 @@ function QuoteModal({
             disabled={submitting}
             className="w-full rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20 disabled:opacity-60"
           >
-            {submitting ? "Submitting..." : "Submit Quote Request"}
+            {submitting ? (loadingMsg || "Submitting...") : "Submit Quote & Generate SAF"}
           </button>
         </form>
       </div>
@@ -1580,6 +1732,7 @@ export default function Home() {
           totalMandays={totalMandays}
           total={total}
           discounted={discounted}
+          subtotal={subtotal}
           onClose={() => setShowModal(false)}
           onSuccess={() => { setShowModal(false); setQuoteSubmitted(true); }}
         />
