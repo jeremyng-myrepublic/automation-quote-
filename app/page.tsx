@@ -2,6 +2,34 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
+  Robot, ClipboardText, MagnifyingGlass, ChatCircle, Brain, ShoppingCart,
+  Globe, PencilSimpleLine, Envelope, ArrowsClockwise, Mailbox, Target,
+  ChartBar, ShoppingBag, Gift, Star, Folders, Broom, LinkSimple, Tray,
+  Tag, Lock, Gear, NotePencil, Shuffle, Package, CalendarBlank, FileText,
+  Wrench, Buildings, Bell, DeviceMobile, Briefcase, Megaphone,
+  GlobeHemisphereWest, PaperPlaneTilt, Handshake, Broadcast, TrendUp,
+  Calculator, TrendDown, Flask, CurrencyDollar, Clock, MapTrifold,
+  Phone, GraduationCap, Lifebuoy, RocketLaunch, X, Check, XCircle, CheckCircle,
+  type Icon,
+} from "@phosphor-icons/react";
+
+const ICON_MAP: Record<string, Icon> = {
+  Robot, ClipboardText, MagnifyingGlass, ChatCircle, Brain, ShoppingCart,
+  Globe, PencilSimpleLine, Envelope, ArrowsClockwise, Mailbox, Target,
+  ChartBar, ShoppingBag, Gift, Star, Folders, Broom, LinkSimple, Tray,
+  Tag, Lock, Gear, NotePencil, Shuffle, Package, CalendarBlank, FileText,
+  Wrench, Buildings, Bell, DeviceMobile, Briefcase, Megaphone,
+  GlobeHemisphereWest, PaperPlaneTilt, Handshake, Broadcast, TrendUp,
+  Calculator, TrendDown, Flask, CurrencyDollar, Clock, MapTrifold,
+  Phone, GraduationCap, Lifebuoy, RocketLaunch,
+};
+
+function SolutionIcon({ name, size = 28, className }: { name: string; size?: number; className?: string }) {
+  const IconComp = ICON_MAP[name];
+  if (!IconComp) return null;
+  return <IconComp size={size} weight="regular" className={className} />;
+}
+import {
   solutions,
   categories,
   MANDAY_RATE,
@@ -186,7 +214,7 @@ function usePricePop(value: number) {
 function SectionLabel({ label, title }: { label: string; title: string }) {
   return (
     <div className="mb-6 sm:mb-8">
-      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#0ea5e9]">
+      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#a020d0]">
         {label}
       </p>
       <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
@@ -317,34 +345,34 @@ function QuoteModal({
     if (!safView) return;
     const link = document.createElement("a");
     link.href = `data:application/pdf;base64,${safView.pdfBase64}`;
-    link.download = "Jem-AI-Solutions-SAF.pdf";
+    link.download = "MyRepublic-Business-SAF.pdf";
     link.click();
   }
 
   const inputCls =
-    "w-full rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] px-4 py-2.5 text-white placeholder-gray-500 outline-none transition focus:border-[#0ea5e9] focus:ring-2 focus:ring-[#0ea5e9]/20";
+    "w-full rounded-lg border border-[#3b1154] bg-[#0c0812] px-4 py-2.5 text-white placeholder-gray-500 outline-none transition focus:border-[#a020d0] focus:ring-2 focus:ring-[#a020d0]/20";
 
   // ── SAF Ready View ──
   if (safView) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-[#111827] p-6 shadow-2xl sm:p-8">
+        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 shadow-2xl sm:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="font-heading text-xl font-bold text-white sm:text-2xl flex items-center gap-2">
                 Your SAF is Ready
                 <span className="text-emerald-400">&#10003;</span>
               </h2>
-              <p className="text-sm text-[#94a3b8] mt-1">
-                A copy has been sent to <span className="text-[#0ea5e9]">{safView.email}</span>. Review below and download to sign.
+              <p className="text-sm text-[#c4a8d4] mt-1">
+                A copy has been sent to <span className="text-[#a020d0]">{safView.email}</span>. Review below and download to sign.
               </p>
             </div>
-            <button onClick={() => { setSafView(null); onSuccess(); }} className="text-2xl text-gray-500 hover:text-gray-300 shrink-0 ml-4">
-              ✕
+            <button onClick={() => { setSafView(null); onSuccess(); }} className="text-gray-500 hover:text-gray-300 shrink-0 ml-4">
+              <X size={22} />
             </button>
           </div>
 
-          <div className="mb-6 rounded-lg border border-[#1e3a5f] overflow-hidden">
+          <div className="mb-6 rounded-lg border border-[#3b1154] overflow-hidden">
             <iframe
               src={`data:application/pdf;base64,${safView.pdfBase64}`}
               width="100%"
@@ -357,19 +385,19 @@ function QuoteModal({
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20"
+              className="flex-1 rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
             >
               Download PDF
             </button>
             <a
               href={`mailto:${process.env.NEXT_PUBLIC_NOTIFY_EMAIL || "hello@jemaisolutions.com"}?subject=SAF Change Request&body=Hi, I would like to request changes to my SAF.`}
-              className="flex-1 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] py-3 font-semibold text-[#94a3b8] text-center transition hover:border-[#0ea5e9]/40 hover:text-white"
+              className="flex-1 rounded-lg border border-[#3b1154] bg-[#0c0812] py-3 font-semibold text-[#c4a8d4] text-center transition hover:border-[#a020d0]/40 hover:text-white"
             >
               Request Changes
             </a>
             <button
               onClick={() => { setSafView(null); onSuccess(); }}
-              className="flex-1 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] py-3 font-semibold text-[#94a3b8] transition hover:border-[#0ea5e9]/40 hover:text-white"
+              className="flex-1 rounded-lg border border-[#3b1154] bg-[#0c0812] py-3 font-semibold text-[#c4a8d4] transition hover:border-[#a020d0]/40 hover:text-white"
             >
               Close
             </button>
@@ -381,18 +409,18 @@ function QuoteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-[#111827] p-6 shadow-2xl sm:p-8">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 shadow-2xl sm:p-8">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
             Request a Quote
           </h2>
-          <button onClick={onClose} className="text-2xl text-gray-500 hover:text-gray-300">
-            ✕
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
+            <X size={22} />
           </button>
         </div>
 
-        <div className="mb-6 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] p-4">
-          <p className="mb-1 text-sm font-medium text-[#94a3b8]">
+        <div className="mb-6 rounded-lg border border-[#3b1154] bg-[#0c0812] p-4">
+          <p className="mb-1 text-sm font-medium text-[#c4a8d4]">
             {selected.length} solution{selected.length !== 1 && "s"} selected
           </p>
           <p className="text-2xl font-bold text-white">
@@ -406,9 +434,9 @@ function QuoteModal({
         </div>
 
         {loadingMsg && (
-          <div className="mb-4 rounded-lg border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 p-4 text-center">
-            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[#0ea5e9] border-t-transparent mr-2 align-middle" />
-            <span className="text-sm text-[#0ea5e9]">{loadingMsg}</span>
+          <div className="mb-4 rounded-lg border border-[#a020d0]/30 bg-[#a020d0]/10 p-4 text-center">
+            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[#a020d0] border-t-transparent mr-2 align-middle" />
+            <span className="text-sm text-[#a020d0]">{loadingMsg}</span>
           </div>
         )}
 
@@ -455,12 +483,12 @@ function QuoteModal({
             <label className="mb-2 block text-sm font-medium text-gray-300">Contract Length *</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="contractLength" value="24" required className="accent-[#0ea5e9]" defaultChecked />
-                <span className="text-sm text-[#e2e8f0]">24 Months</span>
+                <input type="radio" name="contractLength" value="24" required className="accent-[#a020d0]" defaultChecked />
+                <span className="text-sm text-[#f4eefa]">24 Months</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="contractLength" value="36" className="accent-[#0ea5e9]" />
-                <span className="text-sm text-[#e2e8f0]">36 Months</span>
+                <input type="radio" name="contractLength" value="36" className="accent-[#a020d0]" />
+                <span className="text-sm text-[#f4eefa]">36 Months</span>
               </label>
             </div>
           </div>
@@ -480,7 +508,7 @@ function QuoteModal({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20 disabled:opacity-60"
+            className="w-full rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20 disabled:opacity-60"
           >
             {submitting ? (loadingMsg || "Submitting...") : "Submit Quote & Generate SAF"}
           </button>
@@ -514,45 +542,45 @@ function MobileDrawer({
   return (
     <div className="fixed inset-0 z-40 lg:hidden">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-[#1e3a5f] bg-[#111827] shadow-xl slide-in-from-bottom">
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-[#3b1154] bg-[#130d1c] shadow-xl slide-in-from-bottom">
         <div className="flex justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-gray-600" />
         </div>
 
         <div className="flex items-center justify-between px-5 pb-3 pt-1">
           <h2 className="font-heading text-lg font-bold text-white">Your Selection</h2>
-          <button onClick={onClose} className="text-xl text-gray-500 hover:text-gray-300">✕</button>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-300"><X size={20} /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto border-t border-[#1e3a5f]/50 px-5 py-4">
+        <div className="flex-1 overflow-y-auto border-t border-[#3b1154]/50 px-5 py-4">
           <div className="space-y-3">
             {selected.map((s) => (
               <div key={s.id} className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-lg">{s.icon}</span>
+                  <SolutionIcon name={s.icon} size={18} className="text-[#a020d0] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-[#e2e8f0]">{s.name}</p>
-                    <p className="text-xs text-[#94a3b8]">
+                    <p className="text-sm font-medium text-[#f4eefa]">{s.name}</p>
+                    <p className="text-xs text-[#c4a8d4]">
                       {s.mandays} mandays &middot; ${(s.mandays * MANDAY_RATE).toLocaleString()}
                     </p>
                   </div>
                 </div>
-                <button onClick={() => onToggle(s.id)} className="shrink-0 text-sm text-[#64748b] hover:text-red-400">
-                  ✕
+                <button onClick={() => onToggle(s.id)} className="shrink-0 text-[#8a6aaa] hover:text-red-400">
+                  <X size={16} />
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-[#1e3a5f]/50 px-5 pb-6 pt-4">
-          <div className="mb-1 flex justify-between text-sm text-[#94a3b8]">
+        <div className="border-t border-[#3b1154]/50 px-5 pb-6 pt-4">
+          <div className="mb-1 flex justify-between text-sm text-[#c4a8d4]">
             <span>Total mandays</span>
             <span>{totalMandays}</span>
           </div>
           {discounted && (
             <>
-              <div className="mb-1 flex justify-between text-sm text-[#64748b] line-through">
+              <div className="mb-1 flex justify-between text-sm text-[#8a6aaa] line-through">
                 <span>Subtotal</span>
                 <span>${subtotal.toLocaleString()}</span>
               </div>
@@ -568,7 +596,7 @@ function MobileDrawer({
           </div>
           <button
             onClick={() => { onClose(); onRequestQuote(); }}
-            className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20"
+            className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
           >
             Request Quote
           </button>
@@ -653,15 +681,15 @@ function PainPointsSection() {
         <div
           data-reveal-id="pain-col"
           className={`${revealedIds.has("pain-col") ? "visible" : "reveal"} rounded-xl`}
-          style={{ backgroundColor: "#111827", border: "2px solid #1e3a5f", borderLeft: "4px solid #ef4444", padding: "40px", minHeight: "420px" }}
+          style={{ backgroundColor: "#130d1c", border: "2px solid #3b1154", borderLeft: "4px solid #ef4444", padding: "40px", minHeight: "420px" }}
         >
           <h3 className="font-heading font-bold mb-6" style={{ color: "#f87171", fontSize: "22px" }}>
             Without Automation
           </h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {painPoints.map((point, i) => (
-              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
-                <span className="shrink-0" style={{ color: "#ef4444", fontSize: "24px", lineHeight: 1 }}>❌</span>
+              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#e8d8f4]" style={{ fontSize: "18px" }}>
+                <XCircle size={24} weight="fill" className="shrink-0" style={{ color: "#ef4444" }} />
                 {point}
               </li>
             ))}
@@ -672,15 +700,15 @@ function PainPointsSection() {
         <div
           data-reveal-id="solution-col"
           className={`${revealedIds.has("solution-col") ? "visible" : "reveal"} rounded-xl`}
-          style={{ backgroundColor: "#111827", border: "2px solid #1e3a5f", borderLeft: "4px solid #10b981", padding: "40px", minHeight: "420px" }}
+          style={{ backgroundColor: "#130d1c", border: "2px solid #3b1154", borderLeft: "4px solid #10b981", padding: "40px", minHeight: "420px" }}
         >
           <h3 className="font-heading font-bold mb-6" style={{ color: "#34d399", fontSize: "22px" }}>
-            With Jem AI Solutions
+            With MyRepublic Business
           </h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {solutionPoints.map((point, i) => (
-              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#cbd5e1]" style={{ fontSize: "18px" }}>
-                <span className="shrink-0" style={{ color: "#10b981", fontSize: "24px", lineHeight: 1 }}>✅</span>
+              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#e8d8f4]" style={{ fontSize: "18px" }}>
+                <CheckCircle size={24} weight="fill" className="shrink-0" style={{ color: "#10b981" }} />
                 {point}
               </li>
             ))}
@@ -691,9 +719,9 @@ function PainPointsSection() {
       {/* Stat bar */}
       <div
         ref={statsRef}
-        className="mt-8 rounded-xl border border-[#1e3a5f] bg-[#111827]"
+        className="mt-8 rounded-xl border border-[#3b1154] bg-[#130d1c]"
       >
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-[#1e3a5f]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-[#3b1154]">
           {[
             { value: stat1, label: "Hours saved per week" },
             { value: stat2, label: "Faster lead response" },
@@ -702,7 +730,7 @@ function PainPointsSection() {
           ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center py-6 sm:py-8">
               <span className="text-2xl sm:text-3xl font-extrabold text-white">{stat.value}</span>
-              <span className="mt-1 text-xs sm:text-sm text-[#94a3b8]">{stat.label}</span>
+              <span className="mt-1 text-xs sm:text-sm text-[#c4a8d4]">{stat.label}</span>
             </div>
           ))}
         </div>
@@ -714,10 +742,10 @@ function PainPointsSection() {
 /* ─── How It Works timeline ─── */
 
 const howItWorksSteps = [
-  { num: "01", title: "Select & Quote", icon: "🛒", desc: "You browse solutions, build your stack, and submit a quote. No commitment needed.", badge: "Day 1" },
-  { num: "02", title: "Scoping Call", icon: "📞", desc: "We schedule a 45-min call to confirm requirements, timeline, and project scope.", badge: "Day 2–3" },
-  { num: "03", title: "We Build", icon: "⚙️", desc: "Our team builds your automation with progress updates throughout.", badge: "Day 4–14" },
-  { num: "04", title: "Handover & Training", icon: "🎓", desc: "We deliver, train your team live, and hand over full documentation.", badge: "Day 15" },
+  { num: "01", title: "Select & Quote", icon: "ShoppingCart", desc: "You browse solutions, build your stack, and submit a quote. No commitment needed.", badge: "Day 1" },
+  { num: "02", title: "Scoping Call", icon: "Phone", desc: "We schedule a 45-min call to confirm requirements, timeline, and project scope.", badge: "Day 2–3" },
+  { num: "03", title: "We Build", icon: "Gear", desc: "Our team builds your automation with progress updates throughout.", badge: "Day 4–14" },
+  { num: "04", title: "Handover & Training", icon: "GraduationCap", desc: "We deliver, train your team live, and hand over full documentation.", badge: "Day 15" },
 ];
 
 function HowItWorks() {
@@ -748,11 +776,11 @@ function HowItWorks() {
         strokeWidth="2"
         fill="none"
       />
-      <polygon points="36,8 40,12 36,16" fill="#0ea5e9" />
+      <polygon points="36,8 40,12 36,16" fill="#a020d0" />
       <defs>
         <linearGradient id="arrow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#185FA5" />
-          <stop offset="100%" stopColor="#0ea5e9" />
+          <stop offset="0%" stopColor="#63077d" />
+          <stop offset="100%" stopColor="#a020d0" />
         </linearGradient>
       </defs>
     </svg>
@@ -763,10 +791,10 @@ function HowItWorks() {
       className={`timeline-content text-center ${triggered ? "shown" : ""}`}
       style={{ transitionDelay: delay }}
     >
-      <div style={{ fontSize: "28px", marginBottom: "8px" }}>{step.icon}</div>
+      <div style={{ marginBottom: "8px" }}><SolutionIcon name={step.icon} size={28} className="text-[#a020d0] mx-auto" /></div>
       <h3 className="font-heading font-bold text-white" style={{ fontSize: "16px", marginBottom: "4px" }}>{step.title}</h3>
-      <p className="leading-relaxed text-[#cbd5e1]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
-      <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+      <p className="leading-relaxed text-[#e8d8f4]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
+      <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
         {step.badge}
       </span>
     </div>
@@ -824,8 +852,8 @@ function HowItWorks() {
                 left: "12.5%",
                 right: "12.5%",
                 height: "2px",
-                background: "linear-gradient(90deg, #185FA5, #0ea5e9)",
-                boxShadow: "0 0 8px rgba(14,165,233,0.4)",
+                background: "linear-gradient(90deg, #63077d, #a020d0)",
+                boxShadow: "0 0 8px rgba(160,32,208,0.4)",
                 opacity: triggered ? 1 : 0,
                 transition: "opacity 0.8s ease-out 0.3s",
               }}
@@ -848,7 +876,7 @@ function HowItWorks() {
                 }}
               >
                 <div
-                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
+                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
                   style={{
                     width: "48px",
                     height: "48px",
@@ -913,7 +941,7 @@ function HowItWorks() {
               {/* Left: node + connecting line */}
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
                 <div
-                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
+                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
                   style={{ width: "44px", height: "44px", animationDelay: triggered ? nodeDelay : undefined }}
                 >
                   {step.num}
@@ -924,8 +952,8 @@ function HowItWorks() {
                       flex: 1,
                       width: "2px",
                       marginTop: "4px",
-                      background: "linear-gradient(180deg, #185FA5, #0ea5e9)",
-                      boxShadow: "0 0 6px rgba(14,165,233,0.3)",
+                      background: "linear-gradient(180deg, #63077d, #a020d0)",
+                      boxShadow: "0 0 6px rgba(160,32,208,0.3)",
                       opacity: triggered ? 1 : 0,
                       transition: `opacity 0.6s ease-out ${0.4 + i * 0.2}s`,
                     }}
@@ -938,11 +966,11 @@ function HowItWorks() {
                 style={{ transitionDelay: contentDelay, paddingTop: "2px", minHeight: "44px" }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "22px" }}>{step.icon}</span>
+                  <SolutionIcon name={step.icon} size={22} className="text-[#a020d0] shrink-0" />
                   <h3 className="font-heading font-bold text-white" style={{ fontSize: "15px" }}>{step.title}</h3>
                 </div>
-                <p className="leading-relaxed text-[#cbd5e1]" style={{ fontSize: "13px", marginBottom: "6px" }}>{step.desc}</p>
-                <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+                <p className="leading-relaxed text-[#e8d8f4]" style={{ fontSize: "13px", marginBottom: "6px" }}>{step.desc}</p>
+                <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
                   {step.badge}
                 </span>
               </div>
@@ -1033,20 +1061,20 @@ function TestimonialCarousel() {
                 style={{
                   height: "100%",
                   borderRadius: "12px",
-                  backgroundColor: "#111827",
-                  border: "2px solid #1e3a5f",
-                  borderLeft: "4px solid #0ea5e9",
+                  backgroundColor: "#130d1c",
+                  border: "2px solid #3b1154",
+                  borderLeft: "4px solid #a020d0",
                   padding: "20px 24px",
                   display: "flex",
                   flexDirection: "column",
                 }}
               >
                 <div style={{ marginBottom: "12px", color: "#fbbf24", fontSize: "14px", letterSpacing: "0.05em" }}>★★★★★</div>
-                <p style={{ marginBottom: "16px", flex: 1, fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, color: "#e2e8f0" }}>
+                <p style={{ marginBottom: "16px", flex: 1, fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, color: "#f4eefa" }}>
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <p style={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>{t.name}</p>
-                <p style={{ fontSize: "12px", color: "#94a3b8" }}>{t.title}</p>
+                <p style={{ fontSize: "12px", color: "#c4a8d4" }}>{t.title}</p>
               </div>
             </div>
           ))}
@@ -1099,12 +1127,12 @@ export default function Home() {
   const pricePop = usePricePop(total);
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-[#0c0812]">
       {/* ── Floating navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-30 px-4 pt-4 sm:px-6">
-        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0a0f1e]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
+        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0c0812]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
           <span className="font-heading text-lg font-bold text-white tracking-tight">
-            Jem <span className="text-[#0ea5e9]">AI Solutions</span>
+            MyRepublic <span className="text-[#a020d0]">Business</span>
           </span>
 
           {/* Desktop nav links */}
@@ -1118,20 +1146,20 @@ export default function Home() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-[#e2e8f0] transition hover:text-[#0ea5e9] hover:underline hover:underline-offset-4"
+                className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
               >
                 {link.label}
               </a>
             ))}
             <a
               href="/web-services"
-              className="text-sm font-medium text-[#e2e8f0] transition hover:text-[#0ea5e9] hover:underline hover:underline-offset-4"
+              className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
             >
               Web Services
             </a>
             <a
               href="#solutions"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-5 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-5 py-2 text-sm font-semibold text-white transition"
             >
               Get Started
             </a>
@@ -1141,13 +1169,13 @@ export default function Home() {
           <div className="flex items-center gap-3 md:hidden">
             <a
               href="#solutions"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-4 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-4 py-2 text-sm font-semibold text-white transition"
             >
               Get Started
             </a>
             <button
               onClick={() => setMobileNav(!mobileNav)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1e3a5f] text-[#e2e8f0] transition hover:border-[#0ea5e9]/40 hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3b1154] text-[#f4eefa] transition hover:border-[#a020d0]/40 hover:text-white"
               aria-label="Toggle menu"
             >
               {mobileNav ? (
@@ -1165,7 +1193,7 @@ export default function Home() {
 
         {/* Mobile dropdown */}
         {mobileNav && (
-          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#1e3a5f] bg-[#111827]/95 backdrop-blur-lg p-4 md:hidden">
+          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#3b1154] bg-[#130d1c]/95 backdrop-blur-lg p-4 md:hidden">
             {[
               { label: "Packages", href: "#packages" },
               { label: "Support", href: "#support" },
@@ -1176,7 +1204,7 @@ export default function Home() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileNav(false)}
-                className="block rounded-lg px-4 py-3 text-sm font-medium text-[#e2e8f0] transition hover:bg-[#1e3a5f]/30 hover:text-[#0ea5e9]"
+                className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
               >
                 {link.label}
               </a>
@@ -1184,7 +1212,7 @@ export default function Home() {
             <a
               href="/web-services"
               onClick={() => setMobileNav(false)}
-              className="block rounded-lg px-4 py-3 text-sm font-medium text-[#e2e8f0] transition hover:bg-[#1e3a5f]/30 hover:text-[#0ea5e9]"
+              className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
             >
               Web Services
             </a>
@@ -1204,11 +1232,11 @@ export default function Home() {
           <div className="animate-hero-delay mx-auto mt-4 w-48 sm:w-64">
             <div className="glow-line" />
           </div>
-          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#94a3b8] sm:text-lg">
+          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#c4a8d4] sm:text-lg">
             Transparent pricing. Expert delivery. Select what you need.
           </p>
-          <div className="animate-hero-delay-2 badge-glow mt-4 inline-flex items-center gap-2 rounded-full border border-[#0ea5e9]/20 bg-[#0ea5e9]/5 px-4 py-2 text-xs font-medium text-[#0ea5e9] sm:text-sm">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#0ea5e9] animate-pulse" />
+          <div className="animate-hero-delay-2 badge-glow mt-4 inline-flex items-center gap-2 rounded-full border border-[#a020d0]/20 bg-[#a020d0]/5 px-4 py-2 text-xs font-medium text-[#a020d0] sm:text-sm">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a020d0] animate-pulse" />
             Select 3+ solutions for a 10% bundle discount
           </div>
         </div>
@@ -1242,9 +1270,9 @@ export default function Home() {
                 <div className="p-5">
                   <ul className="mb-4 space-y-1.5">
                     {pkgSolutions.map((s) => (
-                      <li key={s.id} className="flex items-center gap-2 text-xs text-[#94a3b8] sm:text-sm">
-                        <span className="text-sm sm:text-base">{s.icon}</span>
-                        <span className="text-[#cbd5e1]">{s.name}</span>
+                      <li key={s.id} className="flex items-center gap-2 text-xs text-[#c4a8d4] sm:text-sm">
+                        <SolutionIcon name={s.icon} size={16} className="text-[#a020d0] shrink-0" />
+                        <span className="text-[#e8d8f4]">{s.name}</span>
                       </li>
                     ))}
                   </ul>
@@ -1252,7 +1280,7 @@ export default function Home() {
                     <span className="text-xl font-bold text-white sm:text-2xl">
                       ${pkgTotal.toLocaleString()}
                     </span>
-                    <span className="text-xs text-[#94a3b8]">{mandays} mandays</span>
+                    <span className="text-xs text-[#c4a8d4]">{mandays} mandays</span>
                   </div>
                   <button
                     onClick={() => {
@@ -1268,8 +1296,8 @@ export default function Home() {
                     }}
                     className={`pkg-btn-glow w-full rounded-lg py-2.5 text-sm font-semibold transition ${
                       isActive
-                        ? "border border-[#1e3a5f] bg-transparent text-gray-400 hover:text-white"
-                        : "bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] text-white"
+                        ? "border border-[#3b1154] bg-transparent text-gray-400 hover:text-white"
+                        : "bg-gradient-to-r from-[#63077d] to-[#a020d0] text-white"
                     }`}
                   >
                     {isActive ? "Remove Package" : "Select Package"}
@@ -1285,7 +1313,7 @@ export default function Home() {
       {(() => {
         const supportCards = [
           {
-            icon: "🎓",
+            icon: "GraduationCap",
             title: "End-User & Admin Training",
             description:
               "Formal training programs for both new users and advanced admins. Includes different learning formats to help your team stay current and keep getting value from your systems over time.",
@@ -1301,7 +1329,7 @@ export default function Home() {
             timeline: "Typically scheduled within 1 week of project completion",
           },
           {
-            icon: "🛟",
+            icon: "Lifebuoy",
             title: "Ongoing Customer Support",
             description:
               "Continued support after go-live through flexible Success Plans. Choose from tiered packages that include expertise, guidance, and education — higher tiers include a dedicated Technical Account Manager.",
@@ -1317,7 +1345,7 @@ export default function Home() {
             commitment: "3 months",
           },
           {
-            icon: "🚀",
+            icon: "RocketLaunch",
             title: "Post-Deployment Adoption Help",
             description:
               "Hands-on adoption support beyond technical cutover — improving adoption, refining workflows, adding scope, and stabilising processes after your team starts using the system.",
@@ -1345,20 +1373,20 @@ export default function Home() {
                   <div
                     key={card.title}
                     data-reveal-id={`support-${i}`}
-                    className={`${revealedIds.has(`support-${i}`) ? "visible" : "reveal"} card-idle group flex flex-col rounded-xl border-2 border-[#1e3a5f] bg-[#111827] p-5 sm:p-6`}
+                    className={`${revealedIds.has(`support-${i}`) ? "visible" : "reveal"} card-idle group flex flex-col rounded-xl border-2 border-[#3b1154] bg-[#130d1c] p-5 sm:p-6`}
                   >
-                    <div className="mb-3 text-3xl">{card.icon}</div>
+                    <div className="mb-3"><SolutionIcon name={card.icon} size={32} className="text-[#a020d0]" /></div>
                     <h3 className="font-heading mb-2 text-base font-semibold text-white">
                       {card.title}
                     </h3>
-                    <p className="mb-5 flex-1 text-sm leading-relaxed text-[#cbd5e1]">
+                    <p className="mb-5 flex-1 text-sm leading-relaxed text-[#e8d8f4]">
                       {card.description}
                     </p>
                     <div className="flex items-center justify-between">
                       <span className="price-glow text-sm font-bold">{card.price}</span>
                       <button
                         onClick={() => setSupportModal(i)}
-                        className="rounded-lg border border-[#0ea5e9]/30 px-4 py-2 text-sm font-semibold text-[#0ea5e9] transition hover:bg-[#0ea5e9]/10 hover:border-[#0ea5e9]/60 hover:shadow-[0_0_12px_rgba(14,165,233,0.25)]"
+                        className="rounded-lg border border-[#a020d0]/30 px-4 py-2 text-sm font-semibold text-[#a020d0] transition hover:bg-[#a020d0]/10 hover:border-[#a020d0]/60 hover:shadow-[0_0_12px_rgba(160,32,208,0.25)]"
                       >
                         Learn More
                       </button>
@@ -1377,56 +1405,56 @@ export default function Home() {
               >
                 <style>{`@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }`}</style>
                 <div
-                  className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl border border-[#1e3a5f] bg-[#111827] p-6 shadow-2xl sm:p-8"
+                  className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 shadow-2xl sm:p-8"
                   style={{ animation: "fade-in 0.2s ease-out" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setSupportModal(null)}
-                    className="absolute right-4 top-4 text-2xl text-gray-500 hover:text-gray-300 transition"
+                    className="absolute right-4 top-4 text-gray-500 hover:text-gray-300 transition"
                   >
-                    ✕
+                    <X size={22} />
                   </button>
 
-                  <div className="text-4xl mb-4">{activeCard.icon}</div>
+                  <div className="mb-4"><SolutionIcon name={activeCard.icon} size={40} className="text-[#a020d0]" /></div>
                   <h2 className="font-heading text-xl font-bold text-white sm:text-2xl mb-1">
                     {activeCard.title}
                   </h2>
-                  <p className="text-lg font-bold text-[#0ea5e9] mb-6">{activeCard.price}</p>
+                  <p className="text-lg font-bold text-[#a020d0] mb-6">{activeCard.price}</p>
 
                   <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">What&apos;s Included</h3>
                   <ul className="mb-6 space-y-2">
                     {activeCard.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm text-[#cbd5e1]">
-                        <span className="mt-0.5 text-[#0ea5e9]">✓</span>
+                      <li key={j} className="flex items-start gap-2 text-sm text-[#e8d8f4]">
+                        <Check size={14} weight="bold" className="mt-0.5 text-[#a020d0] shrink-0" />
                         {item}
                       </li>
                     ))}
                   </ul>
 
-                  <div className="space-y-3 rounded-lg border border-[#1e3a5f] bg-[#0a0f1e] p-4">
+                  <div className="space-y-3 rounded-lg border border-[#3b1154] bg-[#0c0812] p-4">
                     {"bestFor" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Best for</span>
-                        <p className="text-sm text-[#cbd5e1]">{activeCard.bestFor}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Best for</span>
+                        <p className="text-sm text-[#e8d8f4]">{activeCard.bestFor}</p>
                       </div>
                     )}
                     {"planOptions" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Plan options</span>
-                        <p className="text-sm text-[#cbd5e1]">{activeCard.planOptions}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Plan options</span>
+                        <p className="text-sm text-[#e8d8f4]">{activeCard.planOptions}</p>
                       </div>
                     )}
                     {"commitment" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Minimum commitment</span>
-                        <p className="text-sm text-[#cbd5e1]">{activeCard.commitment}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Minimum commitment</span>
+                        <p className="text-sm text-[#e8d8f4]">{activeCard.commitment}</p>
                       </div>
                     )}
                     {"timeline" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">Timeline</span>
-                        <p className="text-sm text-[#cbd5e1]">{activeCard.timeline}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Timeline</span>
+                        <p className="text-sm text-[#e8d8f4]">{activeCard.timeline}</p>
                       </div>
                     )}
                   </div>
@@ -1451,7 +1479,7 @@ export default function Home() {
             <style>{`
               @media (max-width: 767px) {
                 .cat-pills { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
-                .cat-pills > button { padding: 12px 16px !important; border: 1px solid #185FA5 !important; width: 100%; }
+                .cat-pills > button { padding: 12px 16px !important; border: 1px solid #63077d !important; width: 100%; }
                 .cat-pill-inactive { background: #1e293b !important; color: #ffffff !important; }
               }
             `}</style>
@@ -1464,8 +1492,8 @@ export default function Home() {
                     onClick={() => setActiveCategory(cat as Category | "All")}
                     className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
                       isActive
-                        ? "pill-active text-white shadow-lg shadow-[#0ea5e9]/10"
-                        : `cat-pill-inactive pill-inactive border border-[#1e3a5f] text-[#94a3b8] hover:border-[#0ea5e9]/40 hover:text-gray-200`
+                        ? "pill-active text-white shadow-lg shadow-[#a020d0]/10"
+                        : `cat-pill-inactive pill-inactive border border-[#3b1154] text-[#c4a8d4] hover:border-[#a020d0]/40 hover:text-gray-200`
                     }`}
                   >
                     {cat}
@@ -1485,24 +1513,24 @@ export default function Home() {
                     onClick={() => toggle(s.id)}
                     className={`${revealedIds.has(s.id) ? "visible" : "reveal"} group relative rounded-xl border-2 p-5 text-left sm:p-6 min-h-[180px] sm:min-h-[200px] flex flex-col ${
                       isSelected
-                        ? "card-active border-[#0ea5e9] bg-[#1a2744]"
-                        : "card-idle border-[#1e3a5f] bg-[#111827]"
+                        ? "card-active border-[#a020d0] bg-[#200d30]"
+                        : "card-idle border-[#3b1154] bg-[#130d1c]"
                     }`}
                   >
                     {isSelected && (
-                      <div className="check-pop absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] text-xs font-bold text-white shadow-lg shadow-[#0ea5e9]/30">
-                        ✓
+                      <div className="check-pop absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-[#63077d] to-[#a020d0] text-white shadow-lg shadow-[#a020d0]/30">
+                        <Check size={14} weight="bold" />
                       </div>
                     )}
-                    <div className="mb-3 text-2xl sm:text-3xl">{s.icon}</div>
+                    <div className="mb-3"><SolutionIcon name={s.icon} size={32} className="text-[#a020d0]" /></div>
                     <h3 className="font-heading mb-1.5 text-sm font-semibold text-white sm:text-base">
                       {s.name}
                     </h3>
-                    <p className="mb-4 flex-1 text-xs leading-relaxed text-[#cbd5e1] sm:text-sm">
+                    <p className="mb-4 flex-1 text-xs leading-relaxed text-[#e8d8f4] sm:text-sm">
                       {s.description}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-[#94a3b8]">
+                      <span className="text-xs font-medium text-[#c4a8d4]">
                         {s.mandays} mandays
                       </span>
                       <span className="price-glow text-sm font-bold sm:text-base">
@@ -1519,7 +1547,7 @@ export default function Home() {
 
           {/* ── Cart sidebar (desktop) ── */}
           <div className="hidden w-80 shrink-0 lg:block">
-            <div className="sticky top-24 rounded-xl border border-[#1e3a5f] bg-[#111827] p-6">
+            <div className="sticky top-24 rounded-xl border border-[#3b1154] bg-[#130d1c] p-6">
               {quoteSubmitted ? (
                 <div className="py-8 text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
@@ -1530,12 +1558,12 @@ export default function Home() {
                   <h2 className="font-heading mb-2 text-xl font-bold text-white">
                     Quote Requested!
                   </h2>
-                  <p className="mb-6 text-sm text-[#94a3b8]">
+                  <p className="mb-6 text-sm text-[#c4a8d4]">
                     We&apos;ll be in touch within 24 hours with your custom proposal.
                   </p>
                   <button
                     onClick={() => { setQuoteSubmitted(false); setSelectedIds(new Set()); }}
-                    className="rounded-lg border border-[#1e3a5f] px-6 py-2.5 text-sm font-semibold text-gray-300 transition hover:border-[#0ea5e9]/40 hover:text-white"
+                    className="rounded-lg border border-[#3b1154] px-6 py-2.5 text-sm font-semibold text-gray-300 transition hover:border-[#a020d0]/40 hover:text-white"
                   >
                     Start New Quote
                   </button>
@@ -1548,12 +1576,12 @@ export default function Home() {
 
                   {selected.length === 0 ? (
                     <div className="py-10 text-center">
-                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#1e3a5f]">
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#3b1154]">
                         <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                       </div>
-                      <p className="text-sm text-[#94a3b8]">
+                      <p className="text-sm text-[#c4a8d4]">
                         Click on solutions to add them to your quote.
                       </p>
                     </div>
@@ -1563,30 +1591,30 @@ export default function Home() {
                         {selected.map((s) => (
                           <div key={s.id} className="flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2">
-                              <span className="text-lg">{s.icon}</span>
+                              <SolutionIcon name={s.icon} size={18} className="text-[#a020d0] shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-sm font-medium text-[#e2e8f0]">{s.name}</p>
-                                <p className="text-xs text-[#94a3b8]">{s.mandays} mandays</p>
+                                <p className="text-sm font-medium text-[#f4eefa]">{s.name}</p>
+                                <p className="text-xs text-[#c4a8d4]">{s.mandays} mandays</p>
                               </div>
                             </div>
                             <button
                               onClick={() => toggle(s.id)}
-                              className="shrink-0 text-sm text-[#64748b] hover:text-red-400"
+                              className="shrink-0 text-[#8a6aaa] hover:text-red-400"
                             >
-                              ✕
+                              <X size={16} />
                             </button>
                           </div>
                         ))}
                       </div>
 
-                      <div className="border-t border-[#1e3a5f]/50 pt-4">
-                        <div className="mb-1 flex justify-between text-sm text-[#94a3b8]">
+                      <div className="border-t border-[#3b1154]/50 pt-4">
+                        <div className="mb-1 flex justify-between text-sm text-[#c4a8d4]">
                           <span>Total mandays</span>
                           <span>{totalMandays}</span>
                         </div>
                         {discounted && (
                           <>
-                            <div className="mb-1 flex justify-between text-sm text-[#64748b] line-through">
+                            <div className="mb-1 flex justify-between text-sm text-[#8a6aaa] line-through">
                               <span>Subtotal</span>
                               <span>${subtotal.toLocaleString()}</span>
                             </div>
@@ -1622,7 +1650,7 @@ export default function Home() {
       {/* ── FAQ ── */}
       <section id="faq" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <SectionLabel label="FAQ" title="Frequently Asked Questions" />
-        <div className="mx-auto max-w-3xl divide-y divide-[#1e3a5f] rounded-xl border border-[#1e3a5f] bg-[#111827]" ref={faqRef}>
+        <div className="mx-auto max-w-3xl divide-y divide-[#3b1154] rounded-xl border border-[#3b1154] bg-[#130d1c]" ref={faqRef}>
           {[
             {
               q: "How long does it take to build my automation?",
@@ -1657,12 +1685,12 @@ export default function Home() {
             >
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-sm font-semibold text-white sm:text-base">{faq.q}</h3>
-                <span className="shrink-0 text-lg text-[#0ea5e9]">
+                <span className="shrink-0 text-lg text-[#a020d0]">
                   {openFaq === i ? "−" : "+"}
                 </span>
               </div>
               {openFaq === i && (
-                <p className="mt-3 text-sm leading-relaxed text-[#cbd5e1]">{faq.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-[#e8d8f4]">{faq.a}</p>
               )}
             </button>
           ))}
@@ -1670,17 +1698,17 @@ export default function Home() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#1e3a5f]/30 bg-[#0a0f1e]">
+      <footer className="border-t border-[#3b1154]/30 bg-[#0c0812]">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left" ref={footerRef}>
           <div data-reveal-id="footer-brand" className={revealedIds.has("footer-brand") ? "visible" : "reveal"}>
             <span className="font-heading text-lg font-bold text-white tracking-tight">
-              Jem <span className="text-[#0ea5e9]">AI Solutions</span>
+              MyRepublic <span className="text-[#a020d0]">Business</span>
             </span>
-            <p className="mt-1 text-sm text-[#94a3b8]">Automation solutions, delivered by experts.</p>
+            <p className="mt-1 text-sm text-[#c4a8d4]">Automation solutions, delivered by experts.</p>
           </div>
           <div data-reveal-id="footer-copy" className={revealedIds.has("footer-copy") ? "visible" : "reveal"}>
-            <p className="text-sm text-[#94a3b8]">
-              &copy; {new Date().getFullYear()} Jem AI Solutions. All rights reserved.
+            <p className="text-sm text-[#c4a8d4]">
+              &copy; {new Date().getFullYear()} MyRepublic Business. All rights reserved.
             </p>
           </div>
         </div>
@@ -1688,10 +1716,10 @@ export default function Home() {
 
       {/* ── Mobile fixed bottom bar ── */}
       {selected.length > 0 && !quoteSubmitted && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#1e3a5f] bg-[#111827]/95 p-4 backdrop-blur-lg lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#3b1154] bg-[#130d1c]/95 p-4 backdrop-blur-lg lg:hidden">
           <div className="mx-auto flex items-center justify-between">
             <div>
-              <p className="text-xs text-[#94a3b8]">
+              <p className="text-xs text-[#c4a8d4]">
                 {selected.length} solution{selected.length !== 1 && "s"} selected
               </p>
               <p className="text-lg font-bold text-white">
@@ -1703,7 +1731,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setShowDrawer(true)}
-              className="rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-5 py-2.5 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20"
+              className="rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-5 py-2.5 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
             >
               View Quote
             </button>

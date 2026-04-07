@@ -2,6 +2,20 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import {
+  Phone, PaintBrush, Sparkle, RocketLaunch,
+  type Icon,
+} from "@phosphor-icons/react";
+
+const WEB_ICON_MAP: Record<string, Icon> = {
+  Phone, PaintBrush, Sparkle, RocketLaunch,
+};
+
+function StepIcon({ name, size = 28, className }: { name: string; size?: number; className?: string }) {
+  const IconComp = WEB_ICON_MAP[name];
+  if (!IconComp) return null;
+  return <IconComp size={size} weight="regular" className={className} />;
+}
 
 /* ─── Scroll reveal (same pattern as main site) ─── */
 
@@ -111,7 +125,7 @@ function useCountUp(target: number, suffix: string, triggered: boolean) {
 function SectionLabel({ label, title }: { label: string; title: string }) {
   return (
     <div className="mb-6 sm:mb-8">
-      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#0ea5e9]">
+      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#a020d0]">
         {label}
       </p>
       <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
@@ -169,7 +183,7 @@ const webPackages: WebPackage[] = [
     delivery: "3-4 weeks",
     button: "Get Started",
     badge: "Most Popular",
-    badgeColor: "#0ea5e9",
+    badgeColor: "#a020d0",
   },
   {
     name: "Enterprise",
@@ -276,10 +290,10 @@ const comparisonFeatures = [
 ];
 
 const howItWorksSteps = [
-  { num: "01", title: "Discovery Call", icon: "📞", desc: "We learn about your business, goals, and preferences.", badge: "Day 1" },
-  { num: "02", title: "Design & Feedback", icon: "🎨", desc: "We build your site and refine it based on your feedback.", badge: "Day 2-7" },
-  { num: "03", title: "Final Revisions", icon: "✨", desc: "We make final tweaks until you're 100% happy.", badge: "Day 8-12" },
-  { num: "04", title: "Launch", icon: "🚀", desc: "We go live and hand over full ownership to you.", badge: "Day 14+" },
+  { num: "01", title: "Discovery Call", icon: "Phone", desc: "We learn about your business, goals, and preferences.", badge: "Day 1" },
+  { num: "02", title: "Design & Feedback", icon: "PaintBrush", desc: "We build your site and refine it based on your feedback.", badge: "Day 2-7" },
+  { num: "03", title: "Final Revisions", icon: "Sparkle", desc: "We make final tweaks until you're 100% happy.", badge: "Day 8-12" },
+  { num: "04", title: "Launch", icon: "RocketLaunch", desc: "We go live and hand over full ownership to you.", badge: "Day 14+" },
 ];
 
 const faqs = [
@@ -339,8 +353,8 @@ function StatsBar() {
     <section className="mx-auto max-w-7xl px-4 sm:px-6 -mt-8 relative z-10">
       <div
         ref={ref}
-        className="rounded-2xl border border-[#1e3a5f] bg-[#111827] p-6 sm:p-8"
-        style={{ boxShadow: "0 0 40px rgba(14,165,233,0.08)" }}
+        className="rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 sm:p-8"
+        style={{ boxShadow: "0 0 40px rgba(160,32,208,0.08)" }}
       >
         <div className="grid grid-cols-3 gap-4 text-center">
           {[
@@ -349,8 +363,8 @@ function StatsBar() {
             { value: stat3, label: "Mobile responsive" },
           ].map((s, i) => (
             <div key={i}>
-              <p className="text-2xl font-bold text-[#0ea5e9] sm:text-3xl">{s.value}</p>
-              <p className="mt-1 text-xs text-[#94a3b8] sm:text-sm">{s.label}</p>
+              <p className="text-2xl font-bold text-[#a020d0] sm:text-3xl">{s.value}</p>
+              <p className="mt-1 text-xs text-[#c4a8d4] sm:text-sm">{s.label}</p>
             </div>
           ))}
         </div>
@@ -386,10 +400,10 @@ function HowItWorks() {
       className={`timeline-content text-center ${triggered ? "shown" : ""}`}
       style={{ transitionDelay: delay }}
     >
-      <div style={{ fontSize: "28px", marginBottom: "8px" }}>{step.icon}</div>
+      <div style={{ marginBottom: "8px" }}><StepIcon name={step.icon} size={28} className="text-[#a020d0] mx-auto" /></div>
       <h3 className="font-heading font-bold text-white" style={{ fontSize: "16px", marginBottom: "4px" }}>{step.title}</h3>
-      <p className="leading-relaxed text-[#cbd5e1]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
-      <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+      <p className="leading-relaxed text-[#e8d8f4]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
+      <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
         {step.badge}
       </span>
     </div>
@@ -451,7 +465,7 @@ function HowItWorks() {
                 }}
               >
                 <div
-                  className={`timeline-node z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
+                  className={`timeline-node z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
                   style={{ animationDelay: triggered ? nodeDelay : undefined }}
                 >
                   {step.num}
@@ -472,8 +486,8 @@ function HowItWorks() {
                 justifyContent: "center",
               }}
             >
-              <div style={{ width: "100%", height: "2px", background: "linear-gradient(90deg, #185FA5, #0ea5e9)", position: "relative" }}>
-                <div style={{ position: "absolute", right: "-4px", top: "-4px", width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderLeft: "8px solid #0ea5e9" }} />
+              <div style={{ width: "100%", height: "2px", background: "linear-gradient(90deg, #63077d, #a020d0)", position: "relative" }}>
+                <div style={{ position: "absolute", right: "-4px", top: "-4px", width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderLeft: "8px solid #a020d0" }} />
               </div>
             </div>
           ))}
@@ -516,23 +530,23 @@ function HowItWorks() {
             <div key={step.num} style={{ display: "flex", gap: "16px", marginBottom: isLast ? 0 : "24px" }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div
-                  className={`timeline-node z-10 flex items-center justify-center rounded-full bg-gradient-to-br from-[#185FA5] to-[#0ea5e9] text-xs font-bold text-white ${triggered ? "popped" : ""}`}
+                  className={`timeline-node z-10 flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-xs font-bold text-white ${triggered ? "popped" : ""}`}
                   style={{ width: "44px", height: "44px", flexShrink: 0, animationDelay: triggered ? nodeDelay : undefined }}
                 >
                   {step.num}
                 </div>
                 {!isLast && (
-                  <div style={{ width: "2px", flexGrow: 1, marginTop: "8px", background: "linear-gradient(180deg, #185FA5, #0ea5e9)" }} />
+                  <div style={{ width: "2px", flexGrow: 1, marginTop: "8px", background: "linear-gradient(180deg, #63077d, #a020d0)" }} />
                 )}
               </div>
               <div
                 className={`timeline-content ${triggered ? "shown" : ""}`}
                 style={{ transitionDelay: contentDelay, paddingBottom: isLast ? 0 : "8px" }}
               >
-                <div style={{ fontSize: "24px", marginBottom: "4px" }}>{step.icon}</div>
+                <div style={{ marginBottom: "4px" }}><StepIcon name={step.icon} size={24} className="text-[#a020d0]" /></div>
                 <h3 className="font-heading text-sm font-bold text-white mb-1">{step.title}</h3>
-                <p className="text-xs leading-relaxed text-[#cbd5e1] mb-2">{step.desc}</p>
-                <span className="inline-block rounded-full bg-[#0ea5e9]/10 border border-[#0ea5e9]/20 px-3 py-0.5 text-xs font-medium text-[#0ea5e9]">
+                <p className="text-xs leading-relaxed text-[#e8d8f4] mb-2">{step.desc}</p>
+                <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
                   {step.badge}
                 </span>
               </div>
@@ -564,12 +578,12 @@ export default function WebServices() {
       : templates.filter((t) => t.category === activeTemplate);
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-[#0c0812]">
       {/* ── Floating navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-30 px-4 pt-4 sm:px-6">
-        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0a0f1e]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
+        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0c0812]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
           <Link href="/" className="font-heading text-lg font-bold text-white tracking-tight">
-            Jem <span className="text-[#0ea5e9]">AI Solutions</span>
+            MyRepublic <span className="text-[#a020d0]">Business</span>
           </Link>
 
           {/* Desktop nav links */}
@@ -585,7 +599,7 @@ export default function WebServices() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-sm font-medium text-[#e2e8f0] transition hover:text-[#0ea5e9] hover:underline hover:underline-offset-4"
+                  className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
                 >
                   {link.label}
                 </Link>
@@ -593,7 +607,7 @@ export default function WebServices() {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-[#e2e8f0] transition hover:text-[#0ea5e9] hover:underline hover:underline-offset-4"
+                  className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
                 >
                   {link.label}
                 </a>
@@ -601,7 +615,7 @@ export default function WebServices() {
             )}
             <a
               href="#packages"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-5 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-5 py-2 text-sm font-semibold text-white transition"
             >
               View Packages
             </a>
@@ -611,13 +625,13 @@ export default function WebServices() {
           <div className="flex items-center gap-3 md:hidden">
             <a
               href="#packages"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-4 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-4 py-2 text-sm font-semibold text-white transition"
             >
               Packages
             </a>
             <button
               onClick={() => setMobileNav(!mobileNav)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1e3a5f] text-[#e2e8f0] transition hover:border-[#0ea5e9]/40 hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3b1154] text-[#f4eefa] transition hover:border-[#a020d0]/40 hover:text-white"
               aria-label="Toggle menu"
             >
               {mobileNav ? (
@@ -635,7 +649,7 @@ export default function WebServices() {
 
         {/* Mobile dropdown */}
         {mobileNav && (
-          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#1e3a5f] bg-[#111827]/95 backdrop-blur-lg p-4 md:hidden">
+          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#3b1154] bg-[#130d1c]/95 backdrop-blur-lg p-4 md:hidden">
             {[
               { label: "Packages", href: "#packages" },
               { label: "Templates", href: "#gallery" },
@@ -648,7 +662,7 @@ export default function WebServices() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileNav(false)}
-                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[#e2e8f0] transition hover:bg-[#1e3a5f]/30 hover:text-[#0ea5e9]"
+                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
                 >
                   {link.label}
                 </Link>
@@ -657,7 +671,7 @@ export default function WebServices() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileNav(false)}
-                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[#e2e8f0] transition hover:bg-[#1e3a5f]/30 hover:text-[#0ea5e9]"
+                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
                 >
                   {link.label}
                 </a>
@@ -671,7 +685,7 @@ export default function WebServices() {
       <section className="hero-mesh relative overflow-hidden px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40">
         <span className="hero-blob-3" />
         <div className="relative mx-auto max-w-4xl text-center">
-          <p className="section-label mb-3 text-xs font-semibold uppercase text-[#0ea5e9]">
+          <p className="section-label mb-3 text-xs font-semibold uppercase text-[#a020d0]">
             Web Design
           </p>
           <h1 className="animate-hero font-heading text-3xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
@@ -682,19 +696,19 @@ export default function WebServices() {
           <div className="animate-hero-delay mx-auto mt-4 w-48 sm:w-64">
             <div className="glow-line" />
           </div>
-          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#94a3b8] sm:text-lg">
+          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#c4a8d4] sm:text-lg">
             Template-based or fully custom — we build professional websites for Singapore businesses, fast.
           </p>
           <div className="animate-hero-delay-2 mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#gallery"
-              className="rounded-lg border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 px-6 py-3 text-sm font-semibold text-[#0ea5e9] transition hover:bg-[#0ea5e9]/20"
+              className="rounded-lg border border-[#a020d0]/30 bg-[#a020d0]/10 px-6 py-3 text-sm font-semibold text-[#a020d0] transition hover:bg-[#a020d0]/20"
             >
               Browse Templates
             </a>
             <a
               href="#packages"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-6 py-3 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-6 py-3 text-sm font-semibold text-white transition"
             >
               View Packages
             </a>
@@ -713,16 +727,16 @@ export default function WebServices() {
             <div
               key={pkg.name}
               data-reveal-id={`web-pkg-${pkg.name}`}
-              className={`${revealedIds.has(`web-pkg-${pkg.name}`) ? "visible" : "reveal"} relative rounded-2xl border bg-[#111827] p-6 transition hover:-translate-y-1`}
+              className={`${revealedIds.has(`web-pkg-${pkg.name}`) ? "visible" : "reveal"} relative rounded-2xl border bg-[#130d1c] p-6 transition hover:-translate-y-1`}
               style={{
-                borderColor: pkg.borderColor || "#1e3a5f",
+                borderColor: pkg.borderColor || "#3b1154",
                 boxShadow: pkg.glowColor ? `0 0 25px ${pkg.glowColor}` : undefined,
               }}
               onMouseEnter={(e) => {
                 if (pkg.glowColor) {
                   e.currentTarget.style.boxShadow = `0 0 40px ${pkg.glowColor}, 0 0 80px ${pkg.glowColor}`;
                 } else {
-                  e.currentTarget.style.boxShadow = "0 0 25px rgba(14,165,233,0.35), 0 0 50px rgba(14,165,233,0.1)";
+                  e.currentTarget.style.boxShadow = "0 0 25px rgba(160,32,208,0.35), 0 0 50px rgba(160,32,208,0.1)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -742,14 +756,14 @@ export default function WebServices() {
                 </span>
               )}
               <h3 className="font-heading text-lg font-bold text-white">{pkg.name}</h3>
-              <p className="mt-1 text-sm text-[#94a3b8]">{pkg.tagline}</p>
+              <p className="mt-1 text-sm text-[#c4a8d4]">{pkg.tagline}</p>
               <p className="mt-4 text-3xl font-bold text-white">{pkg.price}</p>
-              <p className="mt-1 text-xs text-[#64748b]">Delivery: {pkg.delivery}</p>
+              <p className="mt-1 text-xs text-[#8a6aaa]">Delivery: {pkg.delivery}</p>
 
               <ul className="mt-5 space-y-2.5">
                 {pkg.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-[#cbd5e1]">
-                    <span className="text-[#0ea5e9]">&#10003;</span>
+                  <li key={i} className="flex items-center gap-2 text-sm text-[#e8d8f4]">
+                    <span className="text-[#a020d0]">&#10003;</span>
                     {f}
                   </li>
                 ))}
@@ -760,7 +774,7 @@ export default function WebServices() {
                 style={{
                   background: pkg.borderColor
                     ? `linear-gradient(135deg, ${pkg.borderColor}, #b8860b)`
-                    : "linear-gradient(135deg, #185FA5, #0ea5e9)",
+                    : "linear-gradient(135deg, #63077d, #a020d0)",
                 }}
               >
                 {pkg.button}
@@ -773,13 +787,13 @@ export default function WebServices() {
       {/* ── 4. Feature Comparison Table ── */}
       <section id="compare" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 -mt-8">
         <SectionLabel label="Compare" title="What's Included" />
-        <div className="overflow-x-auto rounded-2xl border border-[#1e3a5f]" ref={compareRef}>
+        <div className="overflow-x-auto rounded-2xl border border-[#3b1154]" ref={compareRef}>
           <table className="w-full min-w-[640px] text-sm">
             <thead>
-              <tr className="border-b border-[#1e3a5f] bg-[#111827]">
-                <th className="px-4 py-4 text-left font-semibold text-[#94a3b8]">Feature</th>
+              <tr className="border-b border-[#3b1154] bg-[#130d1c]">
+                <th className="px-4 py-4 text-left font-semibold text-[#c4a8d4]">Feature</th>
                 <th className="px-4 py-4 text-center font-semibold text-white">Essential</th>
-                <th className="px-4 py-4 text-center font-semibold text-white" style={{ backgroundColor: "rgba(14,165,233,0.06)" }}>Premium</th>
+                <th className="px-4 py-4 text-center font-semibold text-white" style={{ backgroundColor: "rgba(160,32,208,0.06)" }}>Premium</th>
                 <th className="px-4 py-4 text-center font-semibold text-white">Enterprise</th>
                 <th className="px-4 py-4 text-center font-semibold text-white" style={{ borderLeft: "2px solid #FFD700" }}>Custom Build</th>
               </tr>
@@ -789,9 +803,9 @@ export default function WebServices() {
                 <tr
                   key={row.feature}
                   data-reveal-id={`compare-${i}`}
-                  className={`${revealedIds.has(`compare-${i}`) ? "visible" : "reveal"} border-b border-[#1e3a5f]/50 ${i % 2 === 0 ? "bg-[#0a0f1e]" : "bg-[#111827]/50"}`}
+                  className={`${revealedIds.has(`compare-${i}`) ? "visible" : "reveal"} border-b border-[#3b1154]/50 ${i % 2 === 0 ? "bg-[#0c0812]" : "bg-[#130d1c]/50"}`}
                 >
-                  <td className="px-4 py-3 font-medium text-[#cbd5e1]">{row.feature}</td>
+                  <td className="px-4 py-3 font-medium text-[#e8d8f4]">{row.feature}</td>
                   {(["essential", "premium", "enterprise", "custom"] as const).map((key) => {
                     const val = row[key];
                     const isPremium = key === "premium";
@@ -801,7 +815,7 @@ export default function WebServices() {
                         key={key}
                         className="px-4 py-3 text-center"
                         style={{
-                          backgroundColor: isPremium ? "rgba(14,165,233,0.06)" : undefined,
+                          backgroundColor: isPremium ? "rgba(160,32,208,0.06)" : undefined,
                           borderLeft: isCustom ? "2px solid rgba(255,215,0,0.2)" : undefined,
                         }}
                       >
@@ -809,10 +823,10 @@ export default function WebServices() {
                           val ? (
                             <span className="text-[#10b981]">&#10003;</span>
                           ) : (
-                            <span className="text-[#64748b]">&#10007;</span>
+                            <span className="text-[#8a6aaa]">&#10007;</span>
                           )
                         ) : (
-                          <span className="text-[#cbd5e1]">{val}</span>
+                          <span className="text-[#e8d8f4]">{val}</span>
                         )}
                       </td>
                     );
@@ -827,7 +841,7 @@ export default function WebServices() {
       {/* ── 5. Template Gallery ── */}
       <section id="gallery" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <SectionLabel label="Templates" title="Choose Your Starting Point" />
-        <p className="mb-8 text-sm text-[#94a3b8] -mt-4">Click any template to view a live demo site</p>
+        <p className="mb-8 text-sm text-[#c4a8d4] -mt-4">Click any template to view a live demo site</p>
 
         {/* Filter pills */}
         <div className="mb-8 flex flex-wrap gap-2">
@@ -839,8 +853,8 @@ export default function WebServices() {
                 onClick={() => setActiveTemplate(cat)}
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
                   isActive
-                    ? "pill-active text-white shadow-lg shadow-[#0ea5e9]/10"
-                    : "pill-inactive border border-[#1e3a5f] text-[#94a3b8] hover:border-[#0ea5e9]/40 hover:text-gray-200"
+                    ? "pill-active text-white shadow-lg shadow-[#a020d0]/10"
+                    : "pill-inactive border border-[#3b1154] text-[#c4a8d4] hover:border-[#a020d0]/40 hover:text-gray-200"
                 }`}
               >
                 {cat}
@@ -855,7 +869,7 @@ export default function WebServices() {
             <div
               key={t.name}
               data-reveal-id={`tpl-${t.name}`}
-              className={`${revealedIds.has(`tpl-${t.name}`) ? "visible" : "reveal"} group relative overflow-hidden rounded-2xl border border-[#1e3a5f] bg-[#111827] transition hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(14,165,233,0.2)]`}
+              className={`${revealedIds.has(`tpl-${t.name}`) ? "visible" : "reveal"} group relative overflow-hidden rounded-2xl border border-[#3b1154] bg-[#130d1c] transition hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(160,32,208,0.2)]`}
             >
               {/* Gradient thumbnail */}
               <div className={`relative h-48 bg-gradient-to-br ${t.gradient}`}>
@@ -865,12 +879,12 @@ export default function WebServices() {
               </div>
               <div className="p-5">
                 <h3 className="font-heading text-base font-bold text-white">{t.name}</h3>
-                <p className="mt-1 text-sm text-[#94a3b8]">{t.tagline}</p>
+                <p className="mt-1 text-sm text-[#c4a8d4]">{t.tagline}</p>
                 <a
                   href={t.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#0ea5e9] transition hover:text-[#38bdf8]"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#a020d0] transition hover:text-[#c878f0]"
                 >
                   View Live Demo <span aria-hidden="true">&rarr;</span>
                 </a>
@@ -878,7 +892,7 @@ export default function WebServices() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-center text-xs italic text-[#64748b]">
+        <p className="mt-6 text-center text-xs italic text-[#8a6aaa]">
           * Demo sites shown are template previews. Your final website will be customised with your brand, content, and colours.
         </p>
       </section>
@@ -889,18 +903,18 @@ export default function WebServices() {
       {/* ── 7. Cross-sell Block ── */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div
-          className="rounded-2xl border border-[#0ea5e9]/20 bg-[#111827] p-8 sm:p-10"
-          style={{ borderLeft: "4px solid #0ea5e9" }}
+          className="rounded-2xl border border-[#a020d0]/20 bg-[#130d1c] p-8 sm:p-10"
+          style={{ borderLeft: "4px solid #a020d0" }}
         >
           <h3 className="font-heading text-xl font-bold text-white sm:text-2xl">
             Want Automation Built Into Your Site?
           </h3>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#cbd5e1] sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#e8d8f4] sm:text-base">
             Combine your website with AI agents, automated emails, CRM, and more. Our Premium and Enterprise packages include automation integrations — or add them separately.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-6 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#0ea5e9]/20"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-6 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
           >
             Explore Automation Solutions <span aria-hidden="true">&rarr;</span>
           </Link>
@@ -910,7 +924,7 @@ export default function WebServices() {
       {/* ── 8. FAQ ── */}
       <section id="faq" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <SectionLabel label="FAQ" title="Frequently Asked Questions" />
-        <div className="mx-auto max-w-3xl divide-y divide-[#1e3a5f] rounded-xl border border-[#1e3a5f] bg-[#111827]" ref={faqRef}>
+        <div className="mx-auto max-w-3xl divide-y divide-[#3b1154] rounded-xl border border-[#3b1154] bg-[#130d1c]" ref={faqRef}>
           {faqs.map((faq, i) => (
             <button
               key={i}
@@ -920,12 +934,12 @@ export default function WebServices() {
             >
               <div className="flex items-center justify-between gap-4">
                 <h3 className="text-sm font-semibold text-white sm:text-base">{faq.q}</h3>
-                <span className="shrink-0 text-lg text-[#0ea5e9]">
+                <span className="shrink-0 text-lg text-[#a020d0]">
                   {openFaq === i ? "\u2212" : "+"}
                 </span>
               </div>
               {openFaq === i && (
-                <p className="mt-3 text-sm leading-relaxed text-[#cbd5e1]">{faq.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-[#e8d8f4]">{faq.a}</p>
               )}
             </button>
           ))}
@@ -933,25 +947,25 @@ export default function WebServices() {
       </section>
 
       {/* ── 9. CTA Section ── */}
-      <section className="relative overflow-hidden border-t border-[#1e3a5f]/30">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f1e] via-[#111827] to-[#0a0f1e]" />
+      <section className="relative overflow-hidden border-t border-[#3b1154]/30">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0c0812] via-[#130d1c] to-[#0c0812]" />
         <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-28">
           <h2 className="font-heading text-2xl font-bold text-white sm:text-4xl">
             Ready to Build Your Website?
           </h2>
-          <p className="mt-4 text-base text-[#94a3b8] sm:text-lg">
+          <p className="mt-4 text-base text-[#c4a8d4] sm:text-lg">
             Let&apos;s create something your customers will remember.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#packages"
-              className="rounded-lg border border-[#0ea5e9]/30 bg-[#0ea5e9]/10 px-6 py-3 text-sm font-semibold text-[#0ea5e9] transition hover:bg-[#0ea5e9]/20"
+              className="rounded-lg border border-[#a020d0]/30 bg-[#a020d0]/10 px-6 py-3 text-sm font-semibold text-[#a020d0] transition hover:bg-[#a020d0]/20"
             >
               View Packages
             </a>
             <a
               href="#faq"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#185FA5] to-[#0ea5e9] px-6 py-3 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-6 py-3 text-sm font-semibold text-white transition"
             >
               Contact Us
             </a>
@@ -960,17 +974,17 @@ export default function WebServices() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#1e3a5f]/30 bg-[#0a0f1e]">
+      <footer className="border-t border-[#3b1154]/30 bg-[#0c0812]">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left" ref={footerRef}>
           <div data-reveal-id="web-footer-brand" className={revealedIds.has("web-footer-brand") ? "visible" : "reveal"}>
             <Link href="/" className="font-heading text-lg font-bold text-white tracking-tight">
-              Jem <span className="text-[#0ea5e9]">AI Solutions</span>
+              MyRepublic <span className="text-[#a020d0]">Business</span>
             </Link>
-            <p className="mt-1 text-sm text-[#94a3b8]">Professional websites for Singapore businesses.</p>
+            <p className="mt-1 text-sm text-[#c4a8d4]">Professional websites for Singapore businesses.</p>
           </div>
           <div data-reveal-id="web-footer-copy" className={revealedIds.has("web-footer-copy") ? "visible" : "reveal"}>
-            <p className="text-sm text-[#94a3b8]">
-              &copy; {new Date().getFullYear()} Jem AI Solutions. All rights reserved.
+            <p className="text-sm text-[#c4a8d4]">
+              &copy; {new Date().getFullYear()} MyRepublic Business. All rights reserved.
             </p>
           </div>
         </div>

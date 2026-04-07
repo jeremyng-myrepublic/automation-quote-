@@ -13,7 +13,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Jem AI Solutions — Build Your Custom Automation Stack",
+  title: "MyRepublic Business — Build Your Custom Automation Stack",
   description:
     "Browse and select from 48 automation solutions across AI Agents, Email, CRM, Workflows, and more. Transparent pricing. Expert delivery.",
 };

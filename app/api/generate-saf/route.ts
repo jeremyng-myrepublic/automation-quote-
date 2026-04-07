@@ -91,7 +91,7 @@ export async function POST(request: Request) {
 
     // ── Billing Officer (same as authorised) ──
     setText("Billing Address check here if same as Registered Address", address);
-    setText("Name of Billing Officer as per NRIC  Passport  FIN", name);
+    setText("Name of Technical Officer as per NRIC  Passport  FIN_2", name);
     setText("Designation_3", designation);
     setText("Mobile Number_3", phone);
     setText("Postal Code_3", postalCode);
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     const beforeGst = finalPrice;
     const afterGst = Math.round(finalPrice * 1.09 * 100) / 100;
 
-    setText("OneTime ChargeRow1_2", priceStr, 9);
+    setText("OneTime ChargeRow1_3", priceStr, 9);
     setText("OneTime Charge24 Months 36 Months Other please specify_4", priceStr, 9);
     setText("OneTime ChargeTotal Charges Before GST_4", `$${beforeGst.toLocaleString()}`, 9);
     setText("OneTime ChargeTotal Charges After GST_4", `$${afterGst.toLocaleString()}`, 9);
@@ -121,6 +121,9 @@ export async function POST(request: Request) {
 
     // ── Payment Method ──
     checkBox("Bank Transfer");
+
+    // ── Signature section ──
+    setText("Printed Name of Authorised Officer", name);
 
     // ── Date ──
     const today = new Date();
@@ -160,15 +163,15 @@ export async function POST(request: Request) {
                 <p style="margin:0;color:#6b7280;font-size:14px;">Total (after 9% GST): <strong style="color:#185FA5;">$${afterGst.toLocaleString()}</strong></p>
               </div>
               <p style="color:#4b5563;margin-top:24px;">If you have any questions, simply reply to this email.</p>
-              <p style="color:#4b5563;">Best regards,<br/><strong>Jem AI Solutions</strong></p>
+              <p style="color:#4b5563;">Best regards,<br/><strong>MyRepublic Business</strong></p>
             </div>
           </div>
         `;
 
         await resend.emails.send({
-          from: "Jem AI Solutions <onboarding@resend.dev>",
+          from: "MyRepublic Business <onboarding@resend.dev>",
           to: email,
-          subject: "Your Jem AI Solutions Service Application Form",
+          subject: "Your MyRepublic Business Service Application Form",
           html: emailHtml,
           attachments: [
             {
@@ -180,7 +183,7 @@ export async function POST(request: Request) {
         });
 
         await resend.emails.send({
-          from: "Jem AI Solutions <onboarding@resend.dev>",
+          from: "MyRepublic Business <onboarding@resend.dev>",
           to: NOTIFY_EMAIL,
           subject: `SAF Submitted: ${company} — ${name}`,
           html: emailHtml.replace("Hi " + name, "New SAF submission from " + name + " at " + company),
