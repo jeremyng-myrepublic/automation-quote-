@@ -5,8 +5,8 @@ import { join } from "path";
 
 type SelectedSolution = {
   name: string;
-  mandays: number;
-  price: number;
+  tier: "Template" | "Configured" | "Bespoke";
+  priceFrom: number;
 };
 
 type SAFRequest = {
@@ -20,11 +20,12 @@ type SAFRequest = {
   postalCode: string;
   contractLength: "24" | "36";
   selectedSolutions: SelectedSolution[];
-  totalDays: number;
   subtotal: number;
   discountAmount: number;
   finalPrice: number;
 };
+
+const formatSGD = (amount: number) => `SGD ${amount.toLocaleString()}`;
 
 export async function POST(request: Request) {
   let emailWarning = "";
@@ -98,19 +99,23 @@ export async function POST(request: Request) {
     setText("Email Address_3", email);
 
     // ── AI Solution Section ──
-    const descriptionLines = selectedSolutions
-      .map((s) => `${s.name} - ${s.mandays} mandays @ $${s.price.toLocaleString()}`)
-      .join("\n");
+    // Each line shows the solution name + tier + "From SGD X" (indicative starting price).
+    const descriptionLines = [
+      "INDICATIVE — final scope & pricing confirmed in Discovery",
+      ...selectedSolutions.map(
+        (s) => `${s.name} [${s.tier}] — From ${formatSGD(s.priceFrom)}`
+      ),
+    ].join("\n");
     setText("Description Artificial Intelligence AI SolutionRow1", descriptionLines, 8);
 
-    const priceStr = `$${finalPrice.toLocaleString()}`;
+    const priceStr = `From ${formatSGD(finalPrice)}`;
     const beforeGst = finalPrice;
     const afterGst = Math.round(finalPrice * 1.09 * 100) / 100;
 
     setText("OneTime ChargeRow1_3", priceStr, 9);
     setText("OneTime Charge24 Months 36 Months Other please specify_4", priceStr, 9);
-    setText("OneTime ChargeTotal Charges Before GST_4", `$${beforeGst.toLocaleString()}`, 9);
-    setText("OneTime ChargeTotal Charges After GST_4", `$${afterGst.toLocaleString()}`, 9);
+    setText("OneTime ChargeTotal Charges Before GST_4", `From ${formatSGD(beforeGst)}`, 9);
+    setText("OneTime ChargeTotal Charges After GST_4", `From ${formatSGD(afterGst)}`, 9);
 
     // Contract length checkbox (AI Solution section uses _4 suffix)
     if (contractLength === "24") {
@@ -159,8 +164,9 @@ export async function POST(request: Request) {
               <p style="color:#4b5563;">Please find your completed Service Application Form (SAF) attached to this email.</p>
               <p style="color:#4b5563;">Review the form carefully, sign it, and return it to us to proceed with your order.</p>
               <div style="background:#f0f9ff;padding:16px;border-radius:8px;margin-top:16px;">
-                <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Total (before GST): <strong style="color:#1f2937;">$${beforeGst.toLocaleString()}</strong></p>
-                <p style="margin:0;color:#6b7280;font-size:14px;">Total (after 9% GST): <strong style="color:#185FA5;">$${afterGst.toLocaleString()}</strong></p>
+                <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Indicative total (before GST): <strong style="color:#1f2937;">From ${formatSGD(beforeGst)}</strong></p>
+                <p style="margin:0;color:#6b7280;font-size:14px;">Indicative total (after 9% GST): <strong style="color:#185FA5;">From ${formatSGD(afterGst)}</strong></p>
+                <p style="margin:8px 0 0;color:#6b7280;font-size:12px;font-style:italic;">All amounts are indicative starting prices. Final scope and pricing are confirmed during Discovery.</p>
               </div>
               <p style="color:#4b5563;margin-top:24px;">If you have any questions, simply reply to this email.</p>
               <p style="color:#4b5563;">Best regards,<br/><strong>MyRepublic Business</strong></p>

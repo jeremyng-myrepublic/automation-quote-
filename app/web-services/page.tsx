@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  Phone, PaintBrush, Sparkle, RocketLaunch,
-  type Icon,
-} from "@phosphor-icons/react";
+  Phone, PaintBrush, Sparkle, RocketLaunch, Sun, Moon,
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
 
 const WEB_ICON_MAP: Record<string, Icon> = {
   Phone, PaintBrush, Sparkle, RocketLaunch,
@@ -15,6 +16,36 @@ function StepIcon({ name, size = 28, className }: { name: string; size?: number;
   const IconComp = WEB_ICON_MAP[name];
   if (!IconComp) return null;
   return <IconComp size={size} weight="regular" className={className} />;
+}
+
+function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  useEffect(() => {
+    const t = document.documentElement.getAttribute("data-theme");
+    if (t === "light" || t === "dark") setTheme(t);
+  }, []);
+  const toggle = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("theme", next); } catch {}
+      return next;
+    });
+  }, []);
+  return { theme, toggle };
+}
+
+function ThemeToggle({ className = "" }: { className?: string }) {
+  const { theme, toggle } = useTheme();
+  return (
+    <button
+      onClick={toggle}
+      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      className={`flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] transition hover:border-[#b14eb5]/40 hover:text-[#b14eb5] ${className}`}
+    >
+      {theme === "dark" ? <Sun size={18} weight="regular" /> : <Moon size={18} weight="regular" />}
+    </button>
+  );
 }
 
 /* ─── Scroll reveal (same pattern as main site) ─── */
@@ -125,10 +156,10 @@ function useCountUp(target: number, suffix: string, triggered: boolean) {
 function SectionLabel({ label, title }: { label: string; title: string }) {
   return (
     <div className="mb-6 sm:mb-8">
-      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#a020d0]">
+      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#b14eb5]">
         {label}
       </p>
-      <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
+      <h2 className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
         {title}
       </h2>
     </div>
@@ -183,7 +214,7 @@ const webPackages: WebPackage[] = [
     delivery: "3-4 weeks",
     button: "Get Started",
     badge: "Most Popular",
-    badgeColor: "#a020d0",
+    badgeColor: "#b14eb5",
   },
   {
     name: "Enterprise",
@@ -265,9 +296,9 @@ const templates: Template[] = [
   { category: "Real Estate", name: "Prestige Properties", tagline: "Premium property agency", status: "live", link: "https://bootstrapmade.com/demo/EstateAgency/", gradient: "from-slate-500 to-gray-600" },
   { category: "Professional Services", name: "ClearCare Clinic", tagline: "Modern medical practice", status: "live", link: "https://bootstrapmade.com/demo/Medicio/", gradient: "from-cyan-500 to-blue-500" },
   { category: "Construction & Renovation", name: "Forma Studio", tagline: "Interior design & renovation", status: "live", link: "https://bootstrapmade.com/demo/Constructify/", gradient: "from-amber-600 to-yellow-700" },
-  { category: "Events", name: "Elan Events", tagline: "Luxury event planning", status: "live", link: "https://bootstrapmade.com/demo/TheEvent/", gradient: "from-violet-500 to-purple-600" },
+  { category: "Events", name: "Elan Events", tagline: "Luxury event planning", status: "live", link: "https://bootstrapmade.com/demo/TheEvent/", gradient: "bg-[#63077d]" },
   { category: "Non-Profit", name: "Groundwork SG", tagline: "Community & charity", status: "live", link: "https://bootstrapmade.com/demo/Charity/", gradient: "from-green-500 to-emerald-600" },
-  { category: "Tech & SaaS", name: "Stackly", tagline: "Software product landing page", status: "live", link: "https://bootstrapmade.com/demo/HeroBiz/", gradient: "from-sky-500 to-blue-600" },
+  { category: "Tech & SaaS", name: "Stackly", tagline: "Software product landing page", status: "live", link: "https://bootstrapmade.com/demo/HeroBiz/", gradient: "bg-[#b14eb5]" },
   { category: "Hospitality", name: "Haven Boutique Hotel", tagline: "Boutique hotel & suites", status: "live", link: "https://bootstrapmade.com/demo/Grandoria/", gradient: "from-amber-400 to-orange-500" },
   { category: "Portfolio", name: "Studio Vance", tagline: "Creative agency portfolio", status: "live", link: "https://bootstrapmade.com/demo/Folio/", gradient: "from-fuchsia-500 to-pink-600" },
   { category: "Logistics", name: "SwiftLink Logistics", tagline: "Freight & logistics company", status: "live", link: "https://bootstrapmade.com/demo/Logis/", gradient: "from-gray-500 to-slate-600" },
@@ -353,8 +384,8 @@ function StatsBar() {
     <section className="mx-auto max-w-7xl px-4 sm:px-6 -mt-8 relative z-10">
       <div
         ref={ref}
-        className="rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 sm:p-8"
-        style={{ boxShadow: "0 0 40px rgba(160,32,208,0.08)" }}
+        className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 sm:p-8"
+        style={{ boxShadow: "0 0 40px rgba(177,78,181,0.08)" }}
       >
         <div className="grid grid-cols-3 gap-4 text-center">
           {[
@@ -363,8 +394,8 @@ function StatsBar() {
             { value: stat3, label: "Mobile responsive" },
           ].map((s, i) => (
             <div key={i}>
-              <p className="text-2xl font-bold text-[#a020d0] sm:text-3xl">{s.value}</p>
-              <p className="mt-1 text-xs text-[#c4a8d4] sm:text-sm">{s.label}</p>
+              <p className="text-2xl font-bold text-[#b14eb5] sm:text-3xl">{s.value}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)] sm:text-sm">{s.label}</p>
             </div>
           ))}
         </div>
@@ -400,10 +431,10 @@ function HowItWorks() {
       className={`timeline-content text-center ${triggered ? "shown" : ""}`}
       style={{ transitionDelay: delay }}
     >
-      <div style={{ marginBottom: "8px" }}><StepIcon name={step.icon} size={28} className="text-[#a020d0] mx-auto" /></div>
-      <h3 className="font-heading font-bold text-white" style={{ fontSize: "16px", marginBottom: "4px" }}>{step.title}</h3>
-      <p className="leading-relaxed text-[#e8d8f4]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
-      <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
+      <div style={{ marginBottom: "8px" }}><StepIcon name={step.icon} size={28} className="text-[#b14eb5] mx-auto" /></div>
+      <h3 className="font-heading font-bold text-[var(--text-primary)]" style={{ fontSize: "16px", marginBottom: "4px" }}>{step.title}</h3>
+      <p className="leading-relaxed text-[var(--text-secondary)]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
+      <span className="inline-block rounded-full bg-[#b14eb5]/10 border border-[#b14eb5]/20 px-3 py-0.5 text-xs font-medium text-[#b14eb5]">
         {step.badge}
       </span>
     </div>
@@ -465,7 +496,7 @@ function HowItWorks() {
                 }}
               >
                 <div
-                  className={`timeline-node z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
+                  className={`timeline-node z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#b14eb5] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
                   style={{ animationDelay: triggered ? nodeDelay : undefined }}
                 >
                   {step.num}
@@ -486,8 +517,8 @@ function HowItWorks() {
                 justifyContent: "center",
               }}
             >
-              <div style={{ width: "100%", height: "2px", background: "linear-gradient(90deg, #63077d, #a020d0)", position: "relative" }}>
-                <div style={{ position: "absolute", right: "-4px", top: "-4px", width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderLeft: "8px solid #a020d0" }} />
+              <div style={{ width: "100%", height: "2px", background: "linear-gradient(90deg, #63077d, #b14eb5)", position: "relative" }}>
+                <div style={{ position: "absolute", right: "-4px", top: "-4px", width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderLeft: "8px solid #b14eb5" }} />
               </div>
             </div>
           ))}
@@ -530,23 +561,23 @@ function HowItWorks() {
             <div key={step.num} style={{ display: "flex", gap: "16px", marginBottom: isLast ? 0 : "24px" }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div
-                  className={`timeline-node z-10 flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-xs font-bold text-white ${triggered ? "popped" : ""}`}
+                  className={`timeline-node z-10 flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#b14eb5] text-xs font-bold text-white ${triggered ? "popped" : ""}`}
                   style={{ width: "44px", height: "44px", flexShrink: 0, animationDelay: triggered ? nodeDelay : undefined }}
                 >
                   {step.num}
                 </div>
                 {!isLast && (
-                  <div style={{ width: "2px", flexGrow: 1, marginTop: "8px", background: "linear-gradient(180deg, #63077d, #a020d0)" }} />
+                  <div style={{ width: "2px", flexGrow: 1, marginTop: "8px", background: "linear-gradient(180deg, #63077d, #b14eb5)" }} />
                 )}
               </div>
               <div
                 className={`timeline-content ${triggered ? "shown" : ""}`}
                 style={{ transitionDelay: contentDelay, paddingBottom: isLast ? 0 : "8px" }}
               >
-                <div style={{ marginBottom: "4px" }}><StepIcon name={step.icon} size={24} className="text-[#a020d0]" /></div>
-                <h3 className="font-heading text-sm font-bold text-white mb-1">{step.title}</h3>
-                <p className="text-xs leading-relaxed text-[#e8d8f4] mb-2">{step.desc}</p>
-                <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
+                <div style={{ marginBottom: "4px" }}><StepIcon name={step.icon} size={24} className="text-[#b14eb5]" /></div>
+                <h3 className="font-heading text-sm font-bold text-[var(--text-primary)] mb-1">{step.title}</h3>
+                <p className="text-xs leading-relaxed text-[var(--text-secondary)] mb-2">{step.desc}</p>
+                <span className="inline-block rounded-full bg-[#b14eb5]/10 border border-[#b14eb5]/20 px-3 py-0.5 text-xs font-medium text-[#b14eb5]">
                   {step.badge}
                 </span>
               </div>
@@ -578,12 +609,20 @@ export default function WebServices() {
       : templates.filter((t) => t.category === activeTemplate);
 
   return (
-    <div className="min-h-screen bg-[#0c0812]">
+    <div className="min-h-screen bg-[var(--bg-primary)]">
       {/* ── Floating navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-30 px-4 pt-4 sm:px-6">
-        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0c0812]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
-          <Link href="/" className="font-heading text-lg font-bold text-white tracking-tight">
-            MyRepublic <span className="text-[#a020d0]">Business</span>
+        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[var(--bg-primary)]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/myrepublic-logo.png"
+              alt="MyRepublic"
+              width={1080}
+              height={361}
+              priority
+              className="h-7 w-auto sm:h-8"
+            />
+            <span className="font-heading text-lg font-bold text-[#b14eb5] tracking-tight">Business</span>
           </Link>
 
           {/* Desktop nav links */}
@@ -599,7 +638,7 @@ export default function WebServices() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
+                  className="text-sm font-medium text-[var(--text-primary)] transition hover:text-[#b14eb5] hover:underline hover:underline-offset-4"
                 >
                   {link.label}
                 </Link>
@@ -607,15 +646,16 @@ export default function WebServices() {
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
+                  className="text-sm font-medium text-[var(--text-primary)] transition hover:text-[#b14eb5] hover:underline hover:underline-offset-4"
                 >
                   {link.label}
                 </a>
               )
             )}
+            <ThemeToggle />
             <a
               href="#packages"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-5 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-5 py-2 text-sm font-semibold text-white transition"
             >
               View Packages
             </a>
@@ -623,15 +663,16 @@ export default function WebServices() {
 
           {/* Mobile hamburger */}
           <div className="flex items-center gap-3 md:hidden">
+            <ThemeToggle />
             <a
               href="#packages"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-4 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-4 py-2 text-sm font-semibold text-white transition"
             >
               Packages
             </a>
             <button
               onClick={() => setMobileNav(!mobileNav)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3b1154] text-[#f4eefa] transition hover:border-[#a020d0]/40 hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] transition hover:border-[#b14eb5]/40 hover:text-[var(--text-primary)]"
               aria-label="Toggle menu"
             >
               {mobileNav ? (
@@ -649,7 +690,7 @@ export default function WebServices() {
 
         {/* Mobile dropdown */}
         {mobileNav && (
-          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#3b1154] bg-[#130d1c]/95 backdrop-blur-lg p-4 md:hidden">
+          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]/95 backdrop-blur-lg p-4 md:hidden">
             {[
               { label: "Packages", href: "#packages" },
               { label: "Templates", href: "#gallery" },
@@ -662,7 +703,7 @@ export default function WebServices() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileNav(false)}
-                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
+                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--border-subtle)]/30 hover:text-[#b14eb5]"
                 >
                   {link.label}
                 </Link>
@@ -671,7 +712,7 @@ export default function WebServices() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileNav(false)}
-                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
+                  className="block rounded-lg px-4 py-3 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--border-subtle)]/30 hover:text-[#b14eb5]"
                 >
                   {link.label}
                 </a>
@@ -685,10 +726,10 @@ export default function WebServices() {
       <section className="hero-mesh relative overflow-hidden px-4 pb-20 pt-32 sm:px-6 sm:pb-28 sm:pt-40">
         <span className="hero-blob-3" />
         <div className="relative mx-auto max-w-4xl text-center">
-          <p className="section-label mb-3 text-xs font-semibold uppercase text-[#a020d0]">
+          <p className="section-label mb-3 text-xs font-semibold uppercase text-[#b14eb5]">
             Web Design
           </p>
-          <h1 className="animate-hero font-heading text-3xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="animate-hero font-heading text-3xl font-extrabold leading-tight text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
             Beautiful Websites
             <br />
             That Convert
@@ -696,19 +737,19 @@ export default function WebServices() {
           <div className="animate-hero-delay mx-auto mt-4 w-48 sm:w-64">
             <div className="glow-line" />
           </div>
-          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#c4a8d4] sm:text-lg">
+          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[var(--text-muted)] sm:text-lg">
             Template-based or fully custom — we build professional websites for Singapore businesses, fast.
           </p>
           <div className="animate-hero-delay-2 mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#gallery"
-              className="rounded-lg border border-[#a020d0]/30 bg-[#a020d0]/10 px-6 py-3 text-sm font-semibold text-[#a020d0] transition hover:bg-[#a020d0]/20"
+              className="rounded-lg border border-[#b14eb5]/30 bg-[#b14eb5]/10 px-6 py-3 text-sm font-semibold text-[#b14eb5] transition hover:bg-[#b14eb5]/20"
             >
               Browse Templates
             </a>
             <a
               href="#packages"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-6 py-3 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-6 py-3 text-sm font-semibold text-white transition"
             >
               View Packages
             </a>
@@ -727,16 +768,16 @@ export default function WebServices() {
             <div
               key={pkg.name}
               data-reveal-id={`web-pkg-${pkg.name}`}
-              className={`${revealedIds.has(`web-pkg-${pkg.name}`) ? "visible" : "reveal"} relative rounded-2xl border bg-[#130d1c] p-6 transition hover:-translate-y-1`}
+              className={`${revealedIds.has(`web-pkg-${pkg.name}`) ? "visible" : "reveal"} relative rounded-2xl border bg-[var(--bg-card)] p-6 transition hover:-translate-y-1`}
               style={{
-                borderColor: pkg.borderColor || "#3b1154",
+                borderColor: pkg.borderColor || "var(--border-subtle)",
                 boxShadow: pkg.glowColor ? `0 0 25px ${pkg.glowColor}` : undefined,
               }}
               onMouseEnter={(e) => {
                 if (pkg.glowColor) {
                   e.currentTarget.style.boxShadow = `0 0 40px ${pkg.glowColor}, 0 0 80px ${pkg.glowColor}`;
                 } else {
-                  e.currentTarget.style.boxShadow = "0 0 25px rgba(160,32,208,0.35), 0 0 50px rgba(160,32,208,0.1)";
+                  e.currentTarget.style.boxShadow = "0 0 25px rgba(177,78,181,0.35), 0 0 50px rgba(177,78,181,0.1)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -749,32 +790,32 @@ export default function WebServices() {
             >
               {pkg.badge && (
                 <span
-                  className="absolute -top-3 right-4 rounded-full px-3 py-1 text-xs font-bold text-white"
+                  className="absolute -top-3 right-4 rounded-full px-3 py-1 text-xs font-bold text-[var(--text-primary)]"
                   style={{ backgroundColor: pkg.badgeColor }}
                 >
                   {pkg.badge}
                 </span>
               )}
-              <h3 className="font-heading text-lg font-bold text-white">{pkg.name}</h3>
-              <p className="mt-1 text-sm text-[#c4a8d4]">{pkg.tagline}</p>
-              <p className="mt-4 text-3xl font-bold text-white">{pkg.price}</p>
-              <p className="mt-1 text-xs text-[#8a6aaa]">Delivery: {pkg.delivery}</p>
+              <h3 className="font-heading text-lg font-bold text-[var(--text-primary)]">{pkg.name}</h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">{pkg.tagline}</p>
+              <p className="mt-4 text-3xl font-bold text-[var(--text-primary)]">{pkg.price}</p>
+              <p className="mt-1 text-xs text-[var(--text-tertiary)]">Delivery: {pkg.delivery}</p>
 
               <ul className="mt-5 space-y-2.5">
                 {pkg.features.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-[#e8d8f4]">
-                    <span className="text-[#a020d0]">&#10003;</span>
+                  <li key={i} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                    <span className="text-[#b14eb5]">&#10003;</span>
                     {f}
                   </li>
                 ))}
               </ul>
 
               <button
-                className="mt-6 w-full rounded-lg py-2.5 text-sm font-semibold text-white transition"
+                className="mt-6 w-full rounded-lg py-2.5 text-sm font-semibold text-[var(--text-primary)] transition"
                 style={{
                   background: pkg.borderColor
                     ? `linear-gradient(135deg, ${pkg.borderColor}, #b8860b)`
-                    : "linear-gradient(135deg, #63077d, #a020d0)",
+                    : "linear-gradient(135deg, #63077d, #b14eb5)",
                 }}
               >
                 {pkg.button}
@@ -787,15 +828,15 @@ export default function WebServices() {
       {/* ── 4. Feature Comparison Table ── */}
       <section id="compare" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 -mt-8">
         <SectionLabel label="Compare" title="What's Included" />
-        <div className="overflow-x-auto rounded-2xl border border-[#3b1154]" ref={compareRef}>
+        <div className="overflow-x-auto rounded-2xl border border-[var(--border-subtle)]" ref={compareRef}>
           <table className="w-full min-w-[640px] text-sm">
             <thead>
-              <tr className="border-b border-[#3b1154] bg-[#130d1c]">
-                <th className="px-4 py-4 text-left font-semibold text-[#c4a8d4]">Feature</th>
-                <th className="px-4 py-4 text-center font-semibold text-white">Essential</th>
-                <th className="px-4 py-4 text-center font-semibold text-white" style={{ backgroundColor: "rgba(160,32,208,0.06)" }}>Premium</th>
-                <th className="px-4 py-4 text-center font-semibold text-white">Enterprise</th>
-                <th className="px-4 py-4 text-center font-semibold text-white" style={{ borderLeft: "2px solid #FFD700" }}>Custom Build</th>
+              <tr className="border-b border-[var(--border-subtle)] bg-[var(--bg-card)]">
+                <th className="px-4 py-4 text-left font-semibold text-[var(--text-muted)]">Feature</th>
+                <th className="px-4 py-4 text-center font-semibold text-[var(--text-primary)]">Essential</th>
+                <th className="px-4 py-4 text-center font-semibold text-[var(--text-primary)]" style={{ backgroundColor: "rgba(177,78,181,0.06)" }}>Premium</th>
+                <th className="px-4 py-4 text-center font-semibold text-[var(--text-primary)]">Enterprise</th>
+                <th className="px-4 py-4 text-center font-semibold text-[var(--text-primary)]" style={{ borderLeft: "2px solid #FFD700" }}>Custom Build</th>
               </tr>
             </thead>
             <tbody>
@@ -803,9 +844,9 @@ export default function WebServices() {
                 <tr
                   key={row.feature}
                   data-reveal-id={`compare-${i}`}
-                  className={`${revealedIds.has(`compare-${i}`) ? "visible" : "reveal"} border-b border-[#3b1154]/50 ${i % 2 === 0 ? "bg-[#0c0812]" : "bg-[#130d1c]/50"}`}
+                  className={`${revealedIds.has(`compare-${i}`) ? "visible" : "reveal"} border-b border-[var(--border-subtle)]/50 ${i % 2 === 0 ? "bg-[var(--bg-primary)]" : "bg-[var(--bg-card)]/50"}`}
                 >
-                  <td className="px-4 py-3 font-medium text-[#e8d8f4]">{row.feature}</td>
+                  <td className="px-4 py-3 font-medium text-[var(--text-secondary)]">{row.feature}</td>
                   {(["essential", "premium", "enterprise", "custom"] as const).map((key) => {
                     const val = row[key];
                     const isPremium = key === "premium";
@@ -815,7 +856,7 @@ export default function WebServices() {
                         key={key}
                         className="px-4 py-3 text-center"
                         style={{
-                          backgroundColor: isPremium ? "rgba(160,32,208,0.06)" : undefined,
+                          backgroundColor: isPremium ? "rgba(177,78,181,0.06)" : undefined,
                           borderLeft: isCustom ? "2px solid rgba(255,215,0,0.2)" : undefined,
                         }}
                       >
@@ -823,10 +864,10 @@ export default function WebServices() {
                           val ? (
                             <span className="text-[#10b981]">&#10003;</span>
                           ) : (
-                            <span className="text-[#8a6aaa]">&#10007;</span>
+                            <span className="text-[var(--text-tertiary)]">&#10007;</span>
                           )
                         ) : (
-                          <span className="text-[#e8d8f4]">{val}</span>
+                          <span className="text-[var(--text-secondary)]">{val}</span>
                         )}
                       </td>
                     );
@@ -841,7 +882,7 @@ export default function WebServices() {
       {/* ── 5. Template Gallery ── */}
       <section id="gallery" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <SectionLabel label="Templates" title="Choose Your Starting Point" />
-        <p className="mb-8 text-sm text-[#c4a8d4] -mt-4">Click any template to view a live demo site</p>
+        <p className="mb-8 text-sm text-[var(--text-muted)] -mt-4">Click any template to view a live demo site</p>
 
         {/* Filter pills */}
         <div className="mb-8 flex flex-wrap gap-2">
@@ -853,8 +894,8 @@ export default function WebServices() {
                 onClick={() => setActiveTemplate(cat)}
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
                   isActive
-                    ? "pill-active text-white shadow-lg shadow-[#a020d0]/10"
-                    : "pill-inactive border border-[#3b1154] text-[#c4a8d4] hover:border-[#a020d0]/40 hover:text-gray-200"
+                    ? "pill-active text-white shadow-lg shadow-[#b14eb5]/10"
+                    : "pill-inactive border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[#b14eb5]/40 hover:text-[var(--text-secondary)]"
                 }`}
               >
                 {cat}
@@ -869,22 +910,22 @@ export default function WebServices() {
             <div
               key={t.name}
               data-reveal-id={`tpl-${t.name}`}
-              className={`${revealedIds.has(`tpl-${t.name}`) ? "visible" : "reveal"} group relative overflow-hidden rounded-2xl border border-[#3b1154] bg-[#130d1c] transition hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(160,32,208,0.2)]`}
+              className={`${revealedIds.has(`tpl-${t.name}`) ? "visible" : "reveal"} group relative overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] transition hover:-translate-y-1 hover:shadow-[0_0_25px_rgba(177,78,181,0.2)]`}
             >
               {/* Gradient thumbnail */}
               <div className={`relative h-48 bg-gradient-to-br ${t.gradient}`}>
-                <span className="absolute top-3 left-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <span className="absolute top-3 left-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-[var(--text-primary)] backdrop-blur-sm">
                   {t.category}
                 </span>
               </div>
               <div className="p-5">
-                <h3 className="font-heading text-base font-bold text-white">{t.name}</h3>
-                <p className="mt-1 text-sm text-[#c4a8d4]">{t.tagline}</p>
+                <h3 className="font-heading text-base font-bold text-[var(--text-primary)]">{t.name}</h3>
+                <p className="mt-1 text-sm text-[var(--text-muted)]">{t.tagline}</p>
                 <a
                   href={t.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#a020d0] transition hover:text-[#c878f0]"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#b14eb5] transition hover:text-[#c878f0]"
                 >
                   View Live Demo <span aria-hidden="true">&rarr;</span>
                 </a>
@@ -892,7 +933,7 @@ export default function WebServices() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-center text-xs italic text-[#8a6aaa]">
+        <p className="mt-6 text-center text-xs italic text-[var(--text-tertiary)]">
           * Demo sites shown are template previews. Your final website will be customised with your brand, content, and colours.
         </p>
       </section>
@@ -903,18 +944,18 @@ export default function WebServices() {
       {/* ── 7. Cross-sell Block ── */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div
-          className="rounded-2xl border border-[#a020d0]/20 bg-[#130d1c] p-8 sm:p-10"
-          style={{ borderLeft: "4px solid #a020d0" }}
+          className="rounded-2xl border border-[#b14eb5]/20 bg-[var(--bg-card)] p-8 sm:p-10"
+          style={{ borderLeft: "4px solid #b14eb5" }}
         >
-          <h3 className="font-heading text-xl font-bold text-white sm:text-2xl">
+          <h3 className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
             Want Automation Built Into Your Site?
           </h3>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#e8d8f4] sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
             Combine your website with AI agents, automated emails, CRM, and more. Our Premium and Enterprise packages include automation integrations — or add them separately.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-6 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-6 py-3 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#b14eb5]/20"
           >
             Explore Automation Solutions <span aria-hidden="true">&rarr;</span>
           </Link>
@@ -924,7 +965,7 @@ export default function WebServices() {
       {/* ── 8. FAQ ── */}
       <section id="faq" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <SectionLabel label="FAQ" title="Frequently Asked Questions" />
-        <div className="mx-auto max-w-3xl divide-y divide-[#3b1154] rounded-xl border border-[#3b1154] bg-[#130d1c]" ref={faqRef}>
+        <div className="mx-auto max-w-3xl divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]" ref={faqRef}>
           {faqs.map((faq, i) => (
             <button
               key={i}
@@ -933,13 +974,13 @@ export default function WebServices() {
               className={`${revealedIds.has(`web-faq-${i}`) ? "visible" : "reveal"} w-full text-left px-5 py-4 sm:px-6 sm:py-5 transition`}
             >
               <div className="flex items-center justify-between gap-4">
-                <h3 className="text-sm font-semibold text-white sm:text-base">{faq.q}</h3>
-                <span className="shrink-0 text-lg text-[#a020d0]">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] sm:text-base">{faq.q}</h3>
+                <span className="shrink-0 text-lg text-[#b14eb5]">
                   {openFaq === i ? "\u2212" : "+"}
                 </span>
               </div>
               {openFaq === i && (
-                <p className="mt-3 text-sm leading-relaxed text-[#e8d8f4]">{faq.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">{faq.a}</p>
               )}
             </button>
           ))}
@@ -947,25 +988,25 @@ export default function WebServices() {
       </section>
 
       {/* ── 9. CTA Section ── */}
-      <section className="relative overflow-hidden border-t border-[#3b1154]/30">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0c0812] via-[#130d1c] to-[#0c0812]" />
+      <section className="relative overflow-hidden border-t border-[var(--border-subtle)]/30">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-primary)] via-[var(--bg-card)] to-[var(--bg-primary)]" />
         <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 sm:py-28">
-          <h2 className="font-heading text-2xl font-bold text-white sm:text-4xl">
+          <h2 className="font-heading text-2xl font-bold text-[var(--text-primary)] sm:text-4xl">
             Ready to Build Your Website?
           </h2>
-          <p className="mt-4 text-base text-[#c4a8d4] sm:text-lg">
+          <p className="mt-4 text-base text-[var(--text-muted)] sm:text-lg">
             Let&apos;s create something your customers will remember.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="#packages"
-              className="rounded-lg border border-[#a020d0]/30 bg-[#a020d0]/10 px-6 py-3 text-sm font-semibold text-[#a020d0] transition hover:bg-[#a020d0]/20"
+              className="rounded-lg border border-[#b14eb5]/30 bg-[#b14eb5]/10 px-6 py-3 text-sm font-semibold text-[#b14eb5] transition hover:bg-[#b14eb5]/20"
             >
               View Packages
             </a>
             <a
               href="#faq"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-6 py-3 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-6 py-3 text-sm font-semibold text-white transition"
             >
               Contact Us
             </a>
@@ -974,16 +1015,23 @@ export default function WebServices() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#3b1154]/30 bg-[#0c0812]">
+      <footer className="border-t border-[var(--border-subtle)]/30 bg-[var(--bg-primary)]">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left" ref={footerRef}>
           <div data-reveal-id="web-footer-brand" className={revealedIds.has("web-footer-brand") ? "visible" : "reveal"}>
-            <Link href="/" className="font-heading text-lg font-bold text-white tracking-tight">
-              MyRepublic <span className="text-[#a020d0]">Business</span>
+            <Link href="/" className="flex items-center gap-2 justify-center sm:justify-start">
+              <Image
+                src="/myrepublic-logo.png"
+                alt="MyRepublic"
+                width={1080}
+                height={361}
+                className="h-7 w-auto sm:h-8"
+              />
+              <span className="font-heading text-lg font-bold text-[#b14eb5] tracking-tight">Business</span>
             </Link>
-            <p className="mt-1 text-sm text-[#c4a8d4]">Professional websites for Singapore businesses.</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Professional websites for Singapore businesses.</p>
           </div>
           <div data-reveal-id="web-footer-copy" className={revealedIds.has("web-footer-copy") ? "visible" : "reveal"}>
-            <p className="text-sm text-[#c4a8d4]">
+            <p className="text-sm text-[var(--text-muted)]">
               &copy; {new Date().getFullYear()} MyRepublic Business. All rights reserved.
             </p>
           </div>

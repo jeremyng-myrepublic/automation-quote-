@@ -5,8 +5,8 @@ type SelectedSolution = {
   id: string;
   name: string;
   category: string;
-  mandays: number;
-  price: number;
+  tier: "Template" | "Configured" | "Bespoke";
+  priceFrom: number;
 };
 
 type QuoteRequest = {
@@ -17,9 +17,10 @@ type QuoteRequest = {
   referral_source: string;
   notes?: string;
   selected_solutions: SelectedSolution[];
-  total_days: number;
   total_price: number;
 };
+
+const formatSGD = (amount: number) => `SGD ${amount.toLocaleString()}`;
 
 export async function POST(request: Request) {
   try {
@@ -33,7 +34,6 @@ export async function POST(request: Request) {
       referral_source,
       notes,
       selected_solutions,
-      total_days,
       total_price,
     } = body;
 
@@ -42,8 +42,7 @@ export async function POST(request: Request) {
       !company ||
       !email ||
       !selected_solutions?.length ||
-      !total_days ||
-      !total_price
+      typeof total_price !== "number"
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -67,7 +66,6 @@ export async function POST(request: Request) {
           referral_source,
           notes: notes || null,
           selected_solutions,
-          total_days,
           total_price,
           created_at: new Date().toISOString(),
         });
@@ -81,18 +79,21 @@ export async function POST(request: Request) {
       console.log("Supabase not configured — skipping DB save");
     }
 
-    // Build solution table rows for emails
+    // Build solution table rows for emails (Tier · From SGD X)
     const solutionRows = selected_solutions
       .map(
         (s) =>
           `<tr>
             <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${s.name}</td>
             <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${s.category}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${s.mandays}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">$${s.price.toLocaleString()}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${s.tier}</td>
+            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">From ${formatSGD(s.priceFrom)}</td>
           </tr>`
       )
       .join("");
+
+    const indicativeNote =
+      `<p style="margin:8px 0 0;color:#6b7280;font-size:12px;font-style:italic;">All amounts are indicative starting prices. Final scope and pricing are confirmed during Discovery.</p>`;
 
     // Send emails via Resend (skip if not configured)
     if (process.env.RESEND_API_KEY && process.env.NOTIFY_EMAIL) {
@@ -127,17 +128,18 @@ export async function POST(request: Request) {
                     <tr style="background:#f9fafb;">
                       <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e5e7eb;">Solution</th>
                       <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e5e7eb;">Category</th>
-                      <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">Days</th>
-                      <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">Price</th>
+                      <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e5e7eb;">Tier</th>
+                      <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">From</th>
                     </tr>
                   </thead>
                   <tbody>${solutionRows}</tbody>
                 </table>
 
                 <div style="background:#f0f9ff;padding:16px;border-radius:8px;margin-top:16px;">
-                  <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Total Mandays: <strong style="color:#1f2937;">${total_days}</strong></p>
-                  <p style="margin:0;font-size:24px;font-weight:700;color:#185FA5;">$${total_price.toLocaleString()}</p>
+                  <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Indicative total (${selected_solutions.length} solutions)</p>
+                  <p style="margin:0;font-size:24px;font-weight:700;color:#185FA5;">From ${formatSGD(total_price)}</p>
                   ${selected_solutions.length >= 3 ? '<p style="margin:4px 0 0;color:#059669;font-size:13px;">10% bundle discount applied</p>' : ""}
+                  ${indicativeNote}
                 </div>
               </div>
             </div>
@@ -163,8 +165,8 @@ export async function POST(request: Request) {
                   <thead>
                     <tr style="background:#f9fafb;">
                       <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e5e7eb;">Solution</th>
-                      <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">Days</th>
-                      <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">Price</th>
+                      <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #e5e7eb;">Tier</th>
+                      <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e5e7eb;">From</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -173,8 +175,8 @@ export async function POST(request: Request) {
                         (s) =>
                           `<tr>
                             <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${s.name}</td>
-                            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">${s.mandays}</td>
-                            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">$${s.price.toLocaleString()}</td>
+                            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${s.tier}</td>
+                            <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;">From ${formatSGD(s.priceFrom)}</td>
                           </tr>`
                       )
                       .join("")}
@@ -182,9 +184,10 @@ export async function POST(request: Request) {
                 </table>
 
                 <div style="background:#f0f9ff;padding:16px;border-radius:8px;">
-                  <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Total Mandays: <strong style="color:#1f2937;">${total_days}</strong></p>
-                  <p style="margin:0;font-size:24px;font-weight:700;color:#185FA5;">$${total_price.toLocaleString()}</p>
+                  <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Indicative total (${selected_solutions.length} solutions)</p>
+                  <p style="margin:0;font-size:24px;font-weight:700;color:#185FA5;">From ${formatSGD(total_price)}</p>
                   ${selected_solutions.length >= 3 ? '<p style="margin:4px 0 0;color:#059669;font-size:13px;">10% bundle discount applied</p>' : ""}
+                  ${indicativeNote}
                 </div>
 
                 <p style="color:#4b5563;margin-top:24px;">If you have any questions in the meantime, simply reply to this email.</p>

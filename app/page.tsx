@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import {
   Robot, ClipboardText, MagnifyingGlass, ChatCircle, Brain, ShoppingCart,
   Globe, PencilSimpleLine, Envelope, ArrowsClockwise, Mailbox, Target,
@@ -9,9 +10,40 @@ import {
   Wrench, Buildings, Bell, DeviceMobile, Briefcase, Megaphone,
   GlobeHemisphereWest, PaperPlaneTilt, Handshake, Broadcast, TrendUp,
   Calculator, TrendDown, Flask, CurrencyDollar, Clock, MapTrifold,
-  Phone, GraduationCap, Lifebuoy, RocketLaunch, X, Check, XCircle, CheckCircle,
-  type Icon,
-} from "@phosphor-icons/react";
+  Phone, GraduationCap, Lifebuoy, RocketLaunch, Compass, X, Check, XCircle, CheckCircle,
+  Sun, Moon, CaretRight, CaretDown, Plus,
+} from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
+
+function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  useEffect(() => {
+    const t = document.documentElement.getAttribute("data-theme");
+    if (t === "light" || t === "dark") setTheme(t);
+  }, []);
+  const toggle = useCallback(() => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("theme", next); } catch {}
+      return next;
+    });
+  }, []);
+  return { theme, toggle };
+}
+
+function ThemeToggle({ className = "" }: { className?: string }) {
+  const { theme, toggle } = useTheme();
+  return (
+    <button
+      onClick={toggle}
+      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      className={`flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] transition hover:border-[#b14eb5]/40 hover:text-[#b14eb5] ${className}`}
+    >
+      {theme === "dark" ? <Sun size={18} weight="regular" /> : <Moon size={18} weight="regular" />}
+    </button>
+  );
+}
 
 const ICON_MAP: Record<string, Icon> = {
   Robot, ClipboardText, MagnifyingGlass, ChatCircle, Brain, ShoppingCart,
@@ -21,7 +53,7 @@ const ICON_MAP: Record<string, Icon> = {
   Wrench, Buildings, Bell, DeviceMobile, Briefcase, Megaphone,
   GlobeHemisphereWest, PaperPlaneTilt, Handshake, Broadcast, TrendUp,
   Calculator, TrendDown, Flask, CurrencyDollar, Clock, MapTrifold,
-  Phone, GraduationCap, Lifebuoy, RocketLaunch,
+  Phone, GraduationCap, Lifebuoy, RocketLaunch, Compass,
 };
 
 function SolutionIcon({ name, size = 28, className }: { name: string; size?: number; className?: string }) {
@@ -32,12 +64,39 @@ function SolutionIcon({ name, size = 28, className }: { name: string; size?: num
 import {
   solutions,
   categories,
-  MANDAY_RATE,
   BUNDLE_DISCOUNT,
   BUNDLE_THRESHOLD,
   type Solution,
   type Category,
+  type SolutionTier,
 } from "../data/solutions";
+
+/** Sum priceFrom across solutions; undefined (Bespoke) contributes 0. */
+function solutionsSubtotal(sols: Solution[]) {
+  return sols.reduce((sum, s) => sum + (s.priceFrom ?? 0), 0);
+}
+
+/** Solutions with at least one Bespoke item can't be totalled cleanly. */
+function hasBespoke(sols: Solution[]) {
+  return sols.some((s) => s.tier === "Bespoke");
+}
+
+/** Format an indicative SGD amount like "SGD 12,500". */
+function formatSGD(amount: number) {
+  return `SGD ${amount.toLocaleString()}`;
+}
+
+/** Tier badge classnames — uses existing palette, no new colours. */
+function tierBadgeClass(tier: SolutionTier) {
+  switch (tier) {
+    case "Template":
+      return "border border-[#b14eb5]/30 bg-[#b14eb5]/10 text-[#b14eb5]";
+    case "Configured":
+      return "border border-transparent bg-[#63077d] text-white";
+    case "Bespoke":
+      return "border border-[#63077d]/50 bg-transparent text-[#63077d]";
+  }
+}
 
 /* ─── Data ─── */
 
@@ -52,27 +111,27 @@ type Package = {
 
 const packages: Package[] = [
   {
-    name: "Starter Pack",
-    tagline: "Essential automations for small businesses getting started",
-    solutionIds: ["email-1", "crm-4", "notif-5"],
+    name: "Pilot",
+    tagline: "Prove one solution against one clearly-defined pain point. The lowest-risk way to start.",
+    solutionIds: ["discovery-1", "email-1", "crm-4", "notif-5"],
     gradient: "from-sky-500 to-blue-600",
     iconBg: "bg-sky-500/10 text-sky-400",
     glowClass: "pkg-glow-blue",
   },
   {
-    name: "Growth Pack",
-    tagline: "Scale your operations with smart workflows and insights",
-    solutionIds: ["ai-4", "email-4", "email-7", "crm-5", "wf-5", "report-6"],
+    name: "Programme",
+    tagline: "Solve a cluster of related pain points across a department, coordinated end to end.",
+    solutionIds: ["discovery-1", "ai-4", "email-4", "email-7", "crm-5", "wf-5", "report-6"],
     gradient: "from-violet-500 to-purple-600",
     iconBg: "bg-violet-500/10 text-violet-400",
     glowClass: "pkg-glow-purple",
   },
   {
-    name: "Enterprise Pack",
-    tagline: "Full-stack automation suite for large organisations",
+    name: "Partnership",
+    tagline: "Ongoing, multi-department AI capability with a standing delivery relationship.",
     solutionIds: [
-      "ai-1", "ai-5", "email-3", "crm-1", "crm-8",
-      "wf-1", "wf-2", "notif-8", "report-1", "report-4",
+      "discovery-1",
+      "ai-1", "ai-5", "email-3", "crm-1", "wf-1",
     ],
     gradient: "from-amber-500 to-orange-600",
     iconBg: "bg-amber-500/10 text-amber-400",
@@ -82,14 +141,179 @@ const packages: Package[] = [
 
 function getPackagePrice(pkg: Package) {
   const sols = solutions.filter((s) => pkg.solutionIds.includes(s.id));
-  const mandays = sols.reduce((sum, s) => sum + s.mandays, 0);
-  const subtotal = mandays * MANDAY_RATE;
+  const subtotal = solutionsSubtotal(sols);
   const hasDiscount = sols.length >= BUNDLE_THRESHOLD;
   return {
     solutions: sols,
-    mandays,
     total: hasDiscount ? Math.round(subtotal * (1 - BUNDLE_DISCOUNT)) : subtotal,
   };
+}
+
+/* ─── Engagement Tier Journey ──────────────────────────────────────────
+   Three connected stages: Pilot → Programme → Partnership.
+   Connecting line draws once on scroll-into-view. Stages settle in
+   sequence with a gentle fade + small upward ease. Lists collapsed by
+   default; expand/collapse uses grid-template-rows for smooth height.
+   Respects prefers-reduced-motion (see globals.css .tier-* rules).
+─────────────────────────────────────────────────────────────────────── */
+function TierJourney({
+  selectedIds,
+  setSelectedIds,
+}: {
+  selectedIds: Set<string>;
+  setSelectedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+}) {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleExpand = useCallback((name: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
+
+  return (
+    <div ref={sectionRef} className="tier-journey relative pt-2">
+      {/* Horizontal connecting line (desktop) — drawn once L→R */}
+      <div aria-hidden className={`tier-track hidden md:block ${inView ? "tier-track-drawn" : ""}`} />
+
+      <div className="relative grid gap-8 md:grid-cols-3 md:gap-6">
+        {packages.map((pkg, idx) => {
+          const { solutions: pkgSolutions, total: pkgTotal } = getPackagePrice(pkg);
+          const isActive = pkg.solutionIds.every((id) => selectedIds.has(id));
+          const isExpanded = expanded.has(pkg.name);
+          const isLast = idx === packages.length - 1;
+          return (
+            <div
+              key={pkg.name}
+              className={`tier-stage relative ${inView ? "tier-stage-in" : ""}`}
+              style={{ ["--tier-delay" as string]: `${0.15 + idx * 0.18}s` } as React.CSSProperties}
+            >
+              <div
+                className={`tier-card relative flex h-full flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 sm:p-7 ${isActive ? "tier-card-active" : ""}`}
+              >
+                {/* header row: stage label + (optional) "most start here" tag */}
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                    Stage {idx + 1} — {pkg.name}
+                  </p>
+                  {idx === 0 && (
+                    <span className="rounded-full bg-[#b14eb5]/10 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#b14eb5] whitespace-nowrap">
+                      Most start here
+                    </span>
+                  )}
+                </div>
+
+                {/* tier name */}
+                <h3 className="mt-3 font-heading text-2xl font-bold text-[var(--text-primary)]">
+                  {pkg.name}
+                </h3>
+
+                {/* one-line purpose */}
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {pkg.tagline}
+                </p>
+
+                {/* quiet price detail */}
+                <p className="mt-5 text-xs text-[var(--text-muted)]">
+                  From <span className="font-semibold text-[var(--text-secondary)]">{formatSGD(pkgTotal)}</span>
+                  <span className="mx-1.5 text-[var(--text-tertiary)]">·</span>
+                  Indicative
+                </p>
+
+                {/* flex spacer keeps actions/list at the bottom */}
+                <div className="flex-1" />
+
+                {/* select action */}
+                <button
+                  onClick={() => {
+                    setSelectedIds((prev) => {
+                      const next = new Set(prev);
+                      if (isActive) {
+                        pkg.solutionIds.forEach((id) => next.delete(id));
+                      } else {
+                        pkg.solutionIds.forEach((id) => next.add(id));
+                      }
+                      return next;
+                    });
+                  }}
+                  className={`tier-btn mt-6 w-full rounded-lg py-2.5 text-sm font-semibold transition ${
+                    isActive
+                      ? "border border-[var(--border-subtle)] bg-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                      : "bg-gradient-to-r from-[#63077d] to-[#b14eb5] text-white"
+                  }`}
+                >
+                  {isActive ? "Remove Tier" : "Select Tier"}
+                </button>
+
+                {/* collapsible solution list */}
+                <button
+                  onClick={() => toggleExpand(pkg.name)}
+                  aria-expanded={isExpanded}
+                  className="mt-3 flex w-full items-center justify-between px-1 py-1.5 text-xs text-[var(--text-muted)] transition hover:text-[var(--text-secondary)]"
+                >
+                  <span>Includes {pkgSolutions.length} solutions</span>
+                  <CaretDown
+                    size={14}
+                    weight="regular"
+                    className={`tier-chev transition-transform duration-300 ease-out ${isExpanded ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                <div className={`tier-list-grid ${isExpanded ? "tier-list-grid-open" : ""}`}>
+                  <div className="tier-list-inner">
+                    <ul className="mt-2 space-y-1.5">
+                      {pkgSolutions.map((s) => (
+                        <li key={s.id} className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+                          <SolutionIcon name={s.icon} size={14} className="text-[#b14eb5] shrink-0" />
+                          <span>{s.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* forward cue between stages (desktop) */}
+              {!isLast && (
+                <div aria-hidden className="tier-cue tier-cue-h hidden md:flex">
+                  <CaretRight size={16} weight="bold" />
+                </div>
+              )}
+              {/* forward cue (mobile) */}
+              {!isLast && (
+                <div aria-hidden className="tier-cue tier-cue-v flex md:hidden">
+                  <CaretDown size={16} weight="bold" />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 const referralOptions = [
@@ -214,10 +438,10 @@ function usePricePop(value: number) {
 function SectionLabel({ label, title }: { label: string; title: string }) {
   return (
     <div className="mb-6 sm:mb-8">
-      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#a020d0]">
+      <p className="section-label mb-2 text-xs font-semibold uppercase text-[#b14eb5]">
         {label}
       </p>
-      <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
+      <h2 className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
         {title}
       </h2>
     </div>
@@ -226,9 +450,177 @@ function SectionLabel({ label, title }: { label: string; title: string }) {
 
 /* ─── Quote modal (dark) ─── */
 
+/* ─── Solution detail popup ──────────────────────────────────────────
+   Opened when a grid card is clicked. Renders the full description,
+   plus optional sections (video, what you'll need, good fit if,
+   what's included, for example). Add to Quote / Added button calls
+   the same toggle the card uses — no forked logic.
+─────────────────────────────────────────────────────────────────── */
+
+/** Convert common video URLs (YouTube, Vimeo) to embed-friendly URLs.
+ *  Returns null if we don't recognise the format. */
+function toEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (u.pathname.startsWith("/embed/")) return url;
+    }
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1);
+      if (id) return `https://www.youtube.com/embed/${id}`;
+    }
+    if (host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      if (id && /^\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+    }
+    if (host === "player.vimeo.com") return url;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function DetailSection({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+        {heading}
+      </p>
+      <p className="mt-1.5 text-sm leading-relaxed text-[var(--text-secondary)]">
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function SolutionDetailModal({
+  solution,
+  isSelected,
+  onToggle,
+  onClose,
+}: {
+  solution: Solution;
+  isSelected: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const embedUrl = solution.videoUrl ? toEmbedUrl(solution.videoUrl) : null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="solution-detail-title"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="solution-detail-modal flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] shadow-2xl"
+      >
+        {/* Header — stays put */}
+        <div className="flex shrink-0 items-start justify-between gap-4 px-6 pt-6 sm:px-7 sm:pt-7">
+          <div className="min-w-0 flex-1">
+            <div className="mb-3 flex items-center gap-3">
+              <SolutionIcon name={solution.icon} size={28} className="text-[#b14eb5]" />
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${tierBadgeClass(solution.tier)}`}>
+                {solution.tier}
+              </span>
+            </div>
+            <h2 id="solution-detail-title" className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
+              {solution.name}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="shrink-0 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-2 pt-4 sm:px-7">
+          {embedUrl && (
+            <div className="mb-5 aspect-video w-full overflow-hidden rounded-lg border border-[var(--border-subtle)] bg-black">
+              <iframe
+                src={embedUrl}
+                title={`${solution.name} — video`}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          )}
+
+          <p className="text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
+            {solution.description}
+          </p>
+
+          {solution.whatYouNeed && (
+            <DetailSection heading="What you'll need">{solution.whatYouNeed}</DetailSection>
+          )}
+          {solution.goodFitIf && (
+            <DetailSection heading="Good fit if…">{solution.goodFitIf}</DetailSection>
+          )}
+          {solution.whatsIncluded && (
+            <DetailSection heading="What's included">{solution.whatsIncluded}</DetailSection>
+          )}
+          {solution.example && (
+            <DetailSection heading="For example">{solution.example}</DetailSection>
+          )}
+        </div>
+
+        {/* Footer — sticky to the bottom of the modal */}
+        <div className="flex shrink-0 flex-col gap-3 border-t border-[var(--border-subtle)]/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">From</p>
+            <p className="font-heading text-lg font-bold text-[var(--text-primary)] sm:text-xl">
+              {solution.priceFrom !== undefined ? formatSGD(solution.priceFrom) : "Quote on Discovery"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-pressed={isSelected}
+            className={`inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+              isSelected
+                ? "border border-[var(--border-subtle)] bg-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                : "bg-gradient-to-r from-[#63077d] to-[#b14eb5] text-white hover:shadow-lg hover:shadow-[#b14eb5]/20"
+            }`}
+          >
+            {isSelected ? (
+              <>
+                <Check size={14} weight="bold" />
+                <span>Added — Remove</span>
+              </>
+            ) : (
+              <>
+                <Plus size={14} weight="bold" />
+                <span>Add to Quote</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QuoteModal({
   selected,
-  totalMandays: totalDays,
   total,
   discounted,
   subtotal,
@@ -236,7 +628,6 @@ function QuoteModal({
   onSuccess,
 }: {
   selected: Solution[];
-  totalMandays: number;
   total: number;
   discounted: boolean;
   subtotal: number;
@@ -277,10 +668,9 @@ function QuoteModal({
         id: s.id,
         name: s.name,
         category: s.category,
-        mandays: s.mandays,
-        price: s.mandays * MANDAY_RATE,
+        tier: s.tier,
+        priceFrom: s.priceFrom ?? 0,
       })),
-      total_days: totalDays,
       total_price: total,
     };
 
@@ -310,10 +700,9 @@ function QuoteModal({
         contractLength: contractLengthVal,
         selectedSolutions: selected.map((s) => ({
           name: s.name,
-          mandays: s.mandays,
-          price: s.mandays * MANDAY_RATE,
+          tier: s.tier,
+          priceFrom: s.priceFrom ?? 0,
         })),
-        totalDays: totalDays,
         subtotal: subtotal,
         discountAmount: discounted ? Math.round(subtotal * BUNDLE_DISCOUNT) : 0,
         finalPrice: total,
@@ -350,29 +739,29 @@ function QuoteModal({
   }
 
   const inputCls =
-    "w-full rounded-lg border border-[#3b1154] bg-[#0c0812] px-4 py-2.5 text-white placeholder-gray-500 outline-none transition focus:border-[#a020d0] focus:ring-2 focus:ring-[#a020d0]/20";
+    "w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] px-4 py-2.5 text-[var(--text-primary)] placeholder-gray-500 outline-none transition focus:border-[#b14eb5] focus:ring-2 focus:ring-[#b14eb5]/20";
 
   // ── SAF Ready View ──
   if (safView) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 shadow-2xl sm:p-8">
+        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 shadow-2xl sm:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="font-heading text-xl font-bold text-white sm:text-2xl flex items-center gap-2">
+              <h2 className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl flex items-center gap-2">
                 Your SAF is Ready
                 <span className="text-emerald-400">&#10003;</span>
               </h2>
-              <p className="text-sm text-[#c4a8d4] mt-1">
-                A copy has been sent to <span className="text-[#a020d0]">{safView.email}</span>. Review below and download to sign.
+              <p className="text-sm text-[var(--text-muted)] mt-1">
+                A copy has been sent to <span className="text-[#b14eb5]">{safView.email}</span>. Review below and download to sign.
               </p>
             </div>
-            <button onClick={() => { setSafView(null); onSuccess(); }} className="text-gray-500 hover:text-gray-300 shrink-0 ml-4">
+            <button onClick={() => { setSafView(null); onSuccess(); }} className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] shrink-0 ml-4">
               <X size={22} />
             </button>
           </div>
 
-          <div className="mb-6 rounded-lg border border-[#3b1154] overflow-hidden">
+          <div className="mb-6 rounded-lg border border-[var(--border-subtle)] overflow-hidden">
             <iframe
               src={`data:application/pdf;base64,${safView.pdfBase64}`}
               width="100%"
@@ -385,19 +774,19 @@ function QuoteModal({
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleDownload}
-              className="flex-1 rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
+              className="flex-1 rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#b14eb5]/20"
             >
               Download PDF
             </button>
             <a
               href={`mailto:${process.env.NEXT_PUBLIC_NOTIFY_EMAIL || "hello@jemaisolutions.com"}?subject=SAF Change Request&body=Hi, I would like to request changes to my SAF.`}
-              className="flex-1 rounded-lg border border-[#3b1154] bg-[#0c0812] py-3 font-semibold text-[#c4a8d4] text-center transition hover:border-[#a020d0]/40 hover:text-white"
+              className="flex-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] py-3 font-semibold text-[var(--text-muted)] text-center transition hover:border-[#b14eb5]/40 hover:text-[var(--text-primary)]"
             >
               Request Changes
             </a>
             <button
               onClick={() => { setSafView(null); onSuccess(); }}
-              className="flex-1 rounded-lg border border-[#3b1154] bg-[#0c0812] py-3 font-semibold text-[#c4a8d4] transition hover:border-[#a020d0]/40 hover:text-white"
+              className="flex-1 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] py-3 font-semibold text-[var(--text-muted)] transition hover:border-[#b14eb5]/40 hover:text-[var(--text-primary)]"
             >
               Close
             </button>
@@ -409,34 +798,35 @@ function QuoteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 shadow-2xl sm:p-8">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 shadow-2xl sm:p-8">
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="font-heading text-xl font-bold text-white sm:text-2xl">
+          <h2 className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
             Request a Quote
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300">
+          <button onClick={onClose} className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]">
             <X size={22} />
           </button>
         </div>
 
-        <div className="mb-6 rounded-lg border border-[#3b1154] bg-[#0c0812] p-4">
-          <p className="mb-1 text-sm font-medium text-[#c4a8d4]">
+        <div className="mb-6 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] p-4">
+          <p className="mb-1 text-sm font-medium text-[var(--text-muted)]">
             {selected.length} solution{selected.length !== 1 && "s"} selected
           </p>
-          <p className="text-2xl font-bold text-white">
-            ${total.toLocaleString()}
+          <p className="text-2xl font-bold text-[var(--text-primary)]">
+            From {formatSGD(total)}
             {discounted && (
               <span className="ml-2 text-sm font-medium text-emerald-400">
                 (10% bundle discount applied)
               </span>
             )}
           </p>
+          <p className="mt-1 text-xs text-[var(--text-tertiary)]">Indicative — final scope confirmed in Discovery.</p>
         </div>
 
         {loadingMsg && (
-          <div className="mb-4 rounded-lg border border-[#a020d0]/30 bg-[#a020d0]/10 p-4 text-center">
-            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[#a020d0] border-t-transparent mr-2 align-middle" />
-            <span className="text-sm text-[#a020d0]">{loadingMsg}</span>
+          <div className="mb-4 rounded-lg border border-[#b14eb5]/30 bg-[#b14eb5]/10 p-4 text-center">
+            <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[#b14eb5] border-t-transparent mr-2 align-middle" />
+            <span className="text-sm text-[#b14eb5]">{loadingMsg}</span>
           </div>
         )}
 
@@ -448,52 +838,52 @@ function QuoteModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Full Name *</label>
-            <input required name="name" type="text" className={inputCls} placeholder="John Doe" />
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Full Name *</label>
+            <input required name="name" type="text" className={inputCls} placeholder="Jeremy Ng" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Company *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Company *</label>
             <input required name="company" type="text" className={inputCls} placeholder="Acme Corp" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Email *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Email *</label>
             <input required name="email" type="email" className={inputCls} placeholder="john@acme.com" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Phone *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Phone *</label>
             <input required name="phone" type="tel" className={inputCls} placeholder="+65 9123 4567" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Designation / Job Title *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Designation / Job Title *</label>
             <input required name="designation" type="text" className={inputCls} placeholder="Managing Director" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">UEN (Unique Entity Number) *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">UEN (Unique Entity Number) *</label>
             <input required name="uen" type="text" className={inputCls} placeholder="201912345A" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Registered Address *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Registered Address *</label>
             <input required name="address" type="text" className={inputCls} placeholder="123 Business Park Drive #01-01" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Postal Code *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Postal Code *</label>
             <input required name="postalCode" type="text" className={inputCls} placeholder="123456" />
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-300">Contract Length *</label>
+            <label className="mb-2 block text-sm font-medium text-[var(--text-secondary)]">Contract Length *</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="contractLength" value="24" required className="accent-[#a020d0]" defaultChecked />
-                <span className="text-sm text-[#f4eefa]">24 Months</span>
+                <input type="radio" name="contractLength" value="24" required className="accent-[#b14eb5]" defaultChecked />
+                <span className="text-sm text-[var(--text-primary)]">24 Months</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="contractLength" value="36" className="accent-[#a020d0]" />
-                <span className="text-sm text-[#f4eefa]">36 Months</span>
+                <input type="radio" name="contractLength" value="36" className="accent-[#b14eb5]" />
+                <span className="text-sm text-[var(--text-primary)]">36 Months</span>
               </label>
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">How did you hear about us? *</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">How did you hear about us? *</label>
             <select required name="referral_source" defaultValue="" className={inputCls}>
               <option value="" disabled>Select an option</option>
               {referralOptions.map((opt) => (
@@ -502,13 +892,13 @@ function QuoteModal({
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-300">Notes</label>
+            <label className="mb-1 block text-sm font-medium text-[var(--text-secondary)]">Notes</label>
             <textarea name="notes" rows={3} className={`${inputCls} resize-none`} placeholder="Any specific requirements or questions..." />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20 disabled:opacity-60"
+            className="w-full rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#b14eb5]/20 disabled:opacity-60"
           >
             {submitting ? (loadingMsg || "Submitting...") : "Submit Quote & Generate SAF"}
           </button>
@@ -522,7 +912,6 @@ function QuoteModal({
 
 function MobileDrawer({
   selected,
-  totalMandays,
   subtotal,
   total,
   discounted,
@@ -531,7 +920,6 @@ function MobileDrawer({
   onClose,
 }: {
   selected: Solution[];
-  totalMandays: number;
   subtotal: number;
   total: number;
   discounted: boolean;
@@ -542,30 +930,31 @@ function MobileDrawer({
   return (
     <div className="fixed inset-0 z-40 lg:hidden">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-[#3b1154] bg-[#130d1c] shadow-xl slide-in-from-bottom">
+      <div className="absolute inset-x-0 bottom-0 flex max-h-[85vh] flex-col rounded-t-2xl border-t border-[var(--border-subtle)] bg-[var(--bg-card)] shadow-xl slide-in-from-bottom">
         <div className="flex justify-center pt-3 pb-1">
           <div className="h-1 w-10 rounded-full bg-gray-600" />
         </div>
 
         <div className="flex items-center justify-between px-5 pb-3 pt-1">
-          <h2 className="font-heading text-lg font-bold text-white">Your Selection</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-300"><X size={20} /></button>
+          <h2 className="font-heading text-lg font-bold text-[var(--text-primary)]">Your Selection</h2>
+          <button onClick={onClose} className="text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"><X size={20} /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto border-t border-[#3b1154]/50 px-5 py-4">
+        <div className="flex-1 overflow-y-auto border-t border-[var(--border-subtle)]/50 px-5 py-4">
           <div className="space-y-3">
             {selected.map((s) => (
               <div key={s.id} className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2">
-                  <SolutionIcon name={s.icon} size={18} className="text-[#a020d0] shrink-0 mt-0.5" />
+                  <SolutionIcon name={s.icon} size={18} className="text-[#b14eb5] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-[#f4eefa]">{s.name}</p>
-                    <p className="text-xs text-[#c4a8d4]">
-                      {s.mandays} mandays &middot; ${(s.mandays * MANDAY_RATE).toLocaleString()}
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{s.name}</p>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      <span className={`mr-1 inline-flex rounded px-1.5 py-px text-[10px] font-medium uppercase tracking-wider ${tierBadgeClass(s.tier)}`}>{s.tier}</span>
+                      From {formatSGD(s.priceFrom ?? 0)}
                     </p>
                   </div>
                 </div>
-                <button onClick={() => onToggle(s.id)} className="shrink-0 text-[#8a6aaa] hover:text-red-400">
+                <button onClick={() => onToggle(s.id)} className="shrink-0 text-[var(--text-tertiary)] hover:text-red-400">
                   <X size={16} />
                 </button>
               </div>
@@ -573,30 +962,27 @@ function MobileDrawer({
           </div>
         </div>
 
-        <div className="border-t border-[#3b1154]/50 px-5 pb-6 pt-4">
-          <div className="mb-1 flex justify-between text-sm text-[#c4a8d4]">
-            <span>Total mandays</span>
-            <span>{totalMandays}</span>
-          </div>
+        <div className="border-t border-[var(--border-subtle)]/50 px-5 pb-6 pt-4">
+          <p className="mb-2 text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">Indicative totals</p>
           {discounted && (
             <>
-              <div className="mb-1 flex justify-between text-sm text-[#8a6aaa] line-through">
+              <div className="mb-1 flex justify-between text-sm text-[var(--text-tertiary)] line-through">
                 <span>Subtotal</span>
-                <span>${subtotal.toLocaleString()}</span>
+                <span>{formatSGD(subtotal)}</span>
               </div>
               <div className="mb-1 flex justify-between text-sm font-medium text-emerald-400">
                 <span>Bundle discount (10%)</span>
-                <span>-${(subtotal - total).toLocaleString()}</span>
+                <span>-{formatSGD(subtotal - total)}</span>
               </div>
             </>
           )}
-          <div className="mt-2 flex justify-between text-lg font-bold text-white">
-            <span>Total</span>
-            <span>${total.toLocaleString()}</span>
+          <div className="mt-2 flex justify-between text-lg font-bold text-[var(--text-primary)]">
+            <span>From</span>
+            <span>{formatSGD(total)}</span>
           </div>
           <button
             onClick={() => { onClose(); onRequestQuote(); }}
-            className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
+            className="mt-4 w-full rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] py-3 font-semibold text-white transition hover:shadow-lg hover:shadow-[#b14eb5]/20"
           >
             Request Quote
           </button>
@@ -681,14 +1067,14 @@ function PainPointsSection() {
         <div
           data-reveal-id="pain-col"
           className={`${revealedIds.has("pain-col") ? "visible" : "reveal"} rounded-xl`}
-          style={{ backgroundColor: "#130d1c", border: "2px solid #3b1154", borderLeft: "4px solid #ef4444", padding: "40px", minHeight: "420px" }}
+          style={{ backgroundColor: "var(--bg-card)", border: "2px solid var(--border-subtle)", borderLeft: "4px solid #ef4444", padding: "40px", minHeight: "420px" }}
         >
-          <h3 className="font-heading font-bold mb-6" style={{ color: "#f87171", fontSize: "22px" }}>
+          <h3 className="font-heading font-bold mb-6 text-[var(--text-primary)]" style={{ fontSize: "22px" }}>
             Without Automation
           </h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {painPoints.map((point, i) => (
-              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#e8d8f4]" style={{ fontSize: "18px" }}>
+              <li key={i} className="flex items-center gap-3 leading-relaxed text-[var(--text-secondary)]" style={{ fontSize: "18px" }}>
                 <XCircle size={24} weight="fill" className="shrink-0" style={{ color: "#ef4444" }} />
                 {point}
               </li>
@@ -700,14 +1086,14 @@ function PainPointsSection() {
         <div
           data-reveal-id="solution-col"
           className={`${revealedIds.has("solution-col") ? "visible" : "reveal"} rounded-xl`}
-          style={{ backgroundColor: "#130d1c", border: "2px solid #3b1154", borderLeft: "4px solid #10b981", padding: "40px", minHeight: "420px" }}
+          style={{ backgroundColor: "var(--bg-card)", border: "2px solid var(--border-subtle)", borderLeft: "4px solid #10b981", padding: "40px", minHeight: "420px" }}
         >
-          <h3 className="font-heading font-bold mb-6" style={{ color: "#34d399", fontSize: "22px" }}>
+          <h3 className="font-heading font-bold mb-6 text-[var(--text-primary)]" style={{ fontSize: "22px" }}>
             With MyRepublic Business
           </h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             {solutionPoints.map((point, i) => (
-              <li key={i} className="flex items-center gap-3 leading-relaxed text-[#e8d8f4]" style={{ fontSize: "18px" }}>
+              <li key={i} className="flex items-center gap-3 leading-relaxed text-[var(--text-secondary)]" style={{ fontSize: "18px" }}>
                 <CheckCircle size={24} weight="fill" className="shrink-0" style={{ color: "#10b981" }} />
                 {point}
               </li>
@@ -719,9 +1105,9 @@ function PainPointsSection() {
       {/* Stat bar */}
       <div
         ref={statsRef}
-        className="mt-8 rounded-xl border border-[#3b1154] bg-[#130d1c]"
+        className="mt-8 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]"
       >
-        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-[#3b1154]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-[var(--border-subtle)]">
           {[
             { value: stat1, label: "Hours saved per week" },
             { value: stat2, label: "Faster lead response" },
@@ -729,8 +1115,8 @@ function PainPointsSection() {
             { value: stat4, label: "Repetitive tasks eliminated" },
           ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center py-6 sm:py-8">
-              <span className="text-2xl sm:text-3xl font-extrabold text-white">{stat.value}</span>
-              <span className="mt-1 text-xs sm:text-sm text-[#c4a8d4]">{stat.label}</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)]">{stat.value}</span>
+              <span className="mt-1 text-xs sm:text-sm text-[var(--text-muted)]">{stat.label}</span>
             </div>
           ))}
         </div>
@@ -742,10 +1128,50 @@ function PainPointsSection() {
 /* ─── How It Works timeline ─── */
 
 const howItWorksSteps = [
-  { num: "01", title: "Select & Quote", icon: "ShoppingCart", desc: "You browse solutions, build your stack, and submit a quote. No commitment needed.", badge: "Day 1" },
-  { num: "02", title: "Scoping Call", icon: "Phone", desc: "We schedule a 45-min call to confirm requirements, timeline, and project scope.", badge: "Day 2–3" },
-  { num: "03", title: "We Build", icon: "Gear", desc: "Our team builds your automation with progress updates throughout.", badge: "Day 4–14" },
-  { num: "04", title: "Handover & Training", icon: "GraduationCap", desc: "We deliver, train your team live, and hand over full documentation.", badge: "Day 15" },
+  { num: "01", title: "Select & Quote", icon: "ShoppingCart", desc: "Browse solutions, build your stack, and submit a quote. No commitment needed.", badge: "Day 1" },
+  { num: "02", title: "Discovery & Design", icon: "Compass", desc: "A paid discovery phase: we confirm scope, review your systems, and produce a solution design with a fixed-price quote. Creditable against your build.", badge: "Week 1" },
+  { num: "03", title: "We Build", icon: "Gear", desc: "Our team builds your automation with progress updates throughout.", badge: "Week 1–3" },
+  { num: "04", title: "Handover & Training", icon: "GraduationCap", desc: "We deliver, train your team live, and hand over full documentation.", badge: "Week 3" },
+];
+
+/* ─── Problem-led entry (Layer 2 of Solutions section) ─── */
+type BusinessProblem = {
+  id: string;
+  label: string;
+  solutionIds: string[];
+};
+
+const BUSINESS_PROBLEMS: BusinessProblem[] = [
+  {
+    id: "queries",
+    label: "We're drowning in customer queries",
+    solutionIds: ["ai-1", "ai-5", "ai-4", "notif-6"],
+  },
+  {
+    id: "leads",
+    label: "Leads go cold before we follow up",
+    solutionIds: ["ai-3", "email-1", "email-2", "email-4", "crm-3", "crm-4"],
+  },
+  {
+    id: "manual-data",
+    label: "Too much manual data entry",
+    solutionIds: ["crm-1", "crm-2", "crm-4", "crm-5", "crm-6", "wf-6"],
+  },
+  {
+    id: "pipeline-visibility",
+    label: "I can't see what's happening in our pipeline",
+    solutionIds: ["crm-7", "ai-3", "report-2", "report-3", "notif-4"],
+  },
+  {
+    id: "repetitive-tasks",
+    label: "Repetitive tasks eating the team's time",
+    solutionIds: ["wf-1", "wf-3", "wf-5", "wf-6", "wf-8", "ai-8", "email-7"],
+  },
+  {
+    id: "slow-reporting",
+    label: "Slow, manual reporting",
+    solutionIds: ["report-2", "report-3", "report-6", "ai-8"],
+  },
 ];
 
 function HowItWorks() {
@@ -768,212 +1194,60 @@ function HowItWorks() {
     return () => observer.disconnect();
   }, []);
 
-  const ConnectorArrow = () => (
-    <svg viewBox="0 0 40 24" fill="none" style={{ width: "40px", height: "24px" }}>
-      <path
-        d="M0 12 C10 12, 14 4, 20 4 S30 12, 40 12"
-        stroke="url(#arrow-grad)"
-        strokeWidth="2"
-        fill="none"
-      />
-      <polygon points="36,8 40,12 36,16" fill="#a020d0" />
-      <defs>
-        <linearGradient id="arrow-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#63077d" />
-          <stop offset="100%" stopColor="#a020d0" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-
-  const ContentBlock = ({ step, delay }: { step: typeof howItWorksSteps[number]; delay: string }) => (
-    <div
-      className={`timeline-content text-center ${triggered ? "shown" : ""}`}
-      style={{ transitionDelay: delay }}
-    >
-      <div style={{ marginBottom: "8px" }}><SolutionIcon name={step.icon} size={28} className="text-[#a020d0] mx-auto" /></div>
-      <h3 className="font-heading font-bold text-white" style={{ fontSize: "16px", marginBottom: "4px" }}>{step.title}</h3>
-      <p className="leading-relaxed text-[#e8d8f4]" style={{ fontSize: "14px", marginBottom: "8px" }}>{step.desc}</p>
-      <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
-        {step.badge}
-      </span>
-    </div>
-  );
-
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16" ref={sectionRef}>
       <SectionLabel label="Process" title="From Quote to Go-Live in 4 Steps" />
 
-      {/* ── Desktop: 3-row grid with zigzag content ── */}
-      <div className="hidden md:block mt-12">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr auto 1fr auto 1fr auto 1fr",
-            gridTemplateRows: "220px 80px 220px",
-            alignItems: "stretch",
-          }}
-        >
-          {/* ── Row 1: top content ── */}
-          {howItWorksSteps.map((step, i) => {
-            const isAbove = i % 2 === 0;
-            const contentDelay = `${0.8 + i * 0.2}s`;
-            return (
-              <div
-                key={`top-${step.num}`}
-                style={{
-                  gridColumn: i * 2 + 1,
-                  gridRow: 1,
-                  display: "flex",
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                  paddingBottom: "12px",
-                }}
-              >
-                {isAbove ? <ContentBlock step={step} delay={contentDelay} /> : null}
-              </div>
-            );
-          })}
-
-          {/* ── Row 2: nodes + connecting line ── */}
-          {/* Horizontal line behind nodes */}
-          <div
-            style={{
-              gridColumn: "1 / -1",
-              gridRow: 2,
-              display: "flex",
-              alignItems: "center",
-              position: "relative",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                left: "12.5%",
-                right: "12.5%",
-                height: "2px",
-                background: "linear-gradient(90deg, #63077d, #a020d0)",
-                boxShadow: "0 0 8px rgba(160,32,208,0.4)",
-                opacity: triggered ? 1 : 0,
-                transition: "opacity 0.8s ease-out 0.3s",
-              }}
-            />
-          </div>
-
-          {/* Nodes on row 2 */}
-          {howItWorksSteps.map((step, i) => {
-            const nodeDelay = `${0.4 + i * 0.2}s`;
-            return (
-              <div
-                key={`node-${step.num}`}
-                style={{
-                  gridColumn: i * 2 + 1,
-                  gridRow: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                }}
-              >
-                <div
-                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    animationDelay: triggered ? nodeDelay : undefined,
-                  }}
-                >
-                  {step.num}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Connector arrows between nodes on row 2 */}
-          {[0, 1, 2].map((i) => (
-            <div
-              key={`arrow-${i}`}
-              style={{
-                gridColumn: i * 2 + 2,
-                gridRow: 2,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: triggered ? 1 : 0,
-                transition: `opacity 0.4s ease-out ${0.6 + i * 0.2}s`,
-              }}
-            >
-              <ConnectorArrow />
-            </div>
-          ))}
-
-          {/* ── Row 3: bottom content ── */}
-          {howItWorksSteps.map((step, i) => {
-            const isBelow = i % 2 === 1;
-            const contentDelay = `${0.8 + i * 0.2}s`;
-            return (
-              <div
-                key={`bottom-${step.num}`}
-                style={{
-                  gridColumn: i * 2 + 1,
-                  gridRow: 3,
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "center",
-                  paddingTop: "12px",
-                }}
-              >
-                {isBelow ? <ContentBlock step={step} delay={contentDelay} /> : null}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── Mobile: vertical steps ── */}
-      <div className="flex md:hidden mt-10 flex-col" style={{ gap: "24px" }}>
+      <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-4 md:gap-4">
         {howItWorksSteps.map((step, i) => {
-          const nodeDelay = `${0.2 + i * 0.2}s`;
-          const contentDelay = `${0.4 + i * 0.2}s`;
           const isLast = i === howItWorksSteps.length - 1;
           return (
-            <div key={step.num} className="relative" style={{ display: "flex", gap: "16px" }}>
-              {/* Left: node + connecting line */}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                <div
-                  className={`timeline-node flex items-center justify-center rounded-full bg-gradient-to-br from-[#63077d] to-[#a020d0] text-sm font-bold text-white ${triggered ? "popped" : ""}`}
-                  style={{ width: "44px", height: "44px", animationDelay: triggered ? nodeDelay : undefined }}
-                >
-                  {step.num}
+            <div
+              key={step.num}
+              className={`step-card relative ${triggered ? "step-card-in" : ""}`}
+              style={{ ["--step-delay" as string]: `${0.15 + i * 0.12}s` } as React.CSSProperties}
+            >
+              <div className="step-card-inner flex h-full flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 sm:p-7">
+                {/* step number */}
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                  Step {step.num}
+                </p>
+
+                {/* icon */}
+                <div className="mt-3">
+                  <SolutionIcon name={step.icon} size={32} className="text-[#b14eb5]" />
                 </div>
-                {!isLast && (
-                  <div
-                    style={{
-                      flex: 1,
-                      width: "2px",
-                      marginTop: "4px",
-                      background: "linear-gradient(180deg, #63077d, #a020d0)",
-                      boxShadow: "0 0 6px rgba(160,32,208,0.3)",
-                      opacity: triggered ? 1 : 0,
-                      transition: `opacity 0.6s ease-out ${0.4 + i * 0.2}s`,
-                    }}
-                  />
-                )}
-              </div>
-              {/* Right: content */}
-              <div
-                className={`timeline-content ${triggered ? "shown" : ""}`}
-                style={{ transitionDelay: contentDelay, paddingTop: "2px", minHeight: "44px" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <SolutionIcon name={step.icon} size={22} className="text-[#a020d0] shrink-0" />
-                  <h3 className="font-heading font-bold text-white" style={{ fontSize: "15px" }}>{step.title}</h3>
-                </div>
-                <p className="leading-relaxed text-[#e8d8f4]" style={{ fontSize: "13px", marginBottom: "6px" }}>{step.desc}</p>
-                <span className="inline-block rounded-full bg-[#a020d0]/10 border border-[#a020d0]/20 px-3 py-0.5 text-xs font-medium text-[#a020d0]">
+
+                {/* title */}
+                <h3 className="mt-3 font-heading text-lg font-bold text-[var(--text-primary)]">
+                  {step.title}
+                </h3>
+
+                {/* description */}
+                <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)]">
+                  {step.desc}
+                </p>
+
+                <div className="flex-1" />
+
+                {/* timeline badge */}
+                <span className="mt-5 inline-flex w-fit rounded-full border border-[#b14eb5]/20 bg-[#b14eb5]/10 px-3 py-0.5 text-xs font-medium text-[#b14eb5]">
                   {step.badge}
                 </span>
               </div>
+
+              {/* forward cue between cards (desktop) */}
+              {!isLast && (
+                <div aria-hidden className="step-cue step-cue-h hidden md:flex">
+                  <CaretRight size={14} weight="bold" />
+                </div>
+              )}
+              {/* forward cue (mobile) */}
+              {!isLast && (
+                <div aria-hidden className="step-cue step-cue-v flex md:hidden">
+                  <CaretDown size={14} weight="bold" />
+                </div>
+              )}
             </div>
           );
         })}
@@ -1061,20 +1335,20 @@ function TestimonialCarousel() {
                 style={{
                   height: "100%",
                   borderRadius: "12px",
-                  backgroundColor: "#130d1c",
-                  border: "2px solid #3b1154",
-                  borderLeft: "4px solid #a020d0",
+                  backgroundColor: "var(--bg-card)",
+                  border: "2px solid var(--border-subtle)",
+                  borderLeft: "4px solid #b14eb5",
                   padding: "20px 24px",
                   display: "flex",
                   flexDirection: "column",
                 }}
               >
                 <div style={{ marginBottom: "12px", color: "#fbbf24", fontSize: "14px", letterSpacing: "0.05em" }}>★★★★★</div>
-                <p style={{ marginBottom: "16px", flex: 1, fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, color: "#f4eefa" }}>
+                <p style={{ marginBottom: "16px", flex: 1, fontSize: "14px", fontStyle: "italic", lineHeight: 1.7, color: "var(--text-primary)" }}>
                   &ldquo;{t.quote}&rdquo;
                 </p>
                 <p style={{ fontSize: "14px", fontWeight: 700, color: "#ffffff" }}>{t.name}</p>
-                <p style={{ fontSize: "12px", color: "#c4a8d4" }}>{t.title}</p>
+                <p style={{ fontSize: "12px", color: "var(--text-muted)" }}>{t.title}</p>
               </div>
             </div>
           ))}
@@ -1089,21 +1363,45 @@ function TestimonialCarousel() {
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeCategory, setActiveCategory] = useState<Category | "All">("All");
+  const [problemFilter, setProblemFilter] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showDrawer, setShowDrawer] = useState(false);
   const [quoteSubmitted, setQuoteSubmitted] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
   const [supportModal, setSupportModal] = useState<number | null>(null);
+  const [detailSolutionId, setDetailSolutionId] = useState<string | null>(null);
 
-  const filtered =
-    activeCategory === "All"
-      ? solutions
-      : solutions.filter((s) => s.category === activeCategory);
+  /* Discovery is its own block above the grid — exclude from the browse list. */
+  const discoverySolution = solutions.find((s) => s.id === "discovery-1");
+  const browsableSolutions = solutions.filter((s) => s.id !== "discovery-1");
+
+  /* Problem filter (if active) takes priority over category. */
+  const activeProblem = problemFilter
+    ? BUSINESS_PROBLEMS.find((p) => p.id === problemFilter) ?? null
+    : null;
+
+  const filtered = activeProblem
+    ? browsableSolutions.filter((s) => activeProblem.solutionIds.includes(s.id))
+    : activeCategory === "All"
+      ? browsableSolutions
+      : browsableSolutions.filter((s) => s.category === activeCategory);
+
+  const onCategorySelect = useCallback((cat: Category | "All") => {
+    setActiveCategory(cat);
+    setProblemFilter(null);
+  }, []);
+
+  const onProblemSelect = useCallback((id: string) => {
+    setProblemFilter((cur) => (cur === id ? null : id));
+    setActiveCategory("All");
+    requestAnimationFrame(() => {
+      document.getElementById("solutions-grid")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
 
   const selected = solutions.filter((s) => selectedIds.has(s.id));
-  const totalMandays = selected.reduce((sum, s) => sum + s.mandays, 0);
-  const subtotal = totalMandays * MANDAY_RATE;
+  const subtotal = solutionsSubtotal(selected);
   const discounted = selected.length >= BUNDLE_THRESHOLD;
   const total = discounted
     ? Math.round(subtotal * (1 - BUNDLE_DISCOUNT))
@@ -1127,18 +1425,26 @@ export default function Home() {
   const pricePop = usePricePop(total);
 
   return (
-    <div className="min-h-screen bg-[#0c0812]">
+    <div className="min-h-screen bg-[var(--bg-primary)]">
       {/* ── Floating navbar ── */}
       <nav className="fixed top-0 left-0 right-0 z-30 px-4 pt-4 sm:px-6">
-        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[#0c0812]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
-          <span className="font-heading text-lg font-bold text-white tracking-tight">
-            MyRepublic <span className="text-[#a020d0]">Business</span>
+        <div className={`nav-glass mx-auto flex max-w-7xl items-center justify-between rounded-2xl border border-white/[0.06] bg-[var(--bg-primary)]/60 px-5 py-3 ${navScrolled ? "scrolled" : ""}`}>
+          <span className="flex items-center gap-2">
+            <Image
+              src="/myrepublic-logo.png"
+              alt="MyRepublic"
+              width={1080}
+              height={361}
+              priority
+              className="h-7 w-auto sm:h-8"
+            />
+            <span className="font-heading text-lg font-bold text-[#b14eb5] tracking-tight">Business</span>
           </span>
 
           {/* Desktop nav links */}
           <div className="hidden items-center gap-6 md:flex">
             {[
-              { label: "Packages", href: "#packages" },
+              { label: "Tiers", href: "#packages" },
               { label: "Support", href: "#support" },
               { label: "Solutions", href: "#solutions" },
               { label: "FAQ", href: "#faq" },
@@ -1146,20 +1452,23 @@ export default function Home() {
               <a
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
+                className="text-sm font-medium text-[var(--text-primary)] transition hover:text-[#b14eb5] hover:underline hover:underline-offset-4"
               >
                 {link.label}
               </a>
             ))}
+            {/* Web Services link hidden for now
             <a
               href="/web-services"
-              className="text-sm font-medium text-[#f4eefa] transition hover:text-[#a020d0] hover:underline hover:underline-offset-4"
+              className="text-sm font-medium text-[var(--text-primary)] transition hover:text-[#b14eb5] hover:underline hover:underline-offset-4"
             >
               Web Services
             </a>
+            */}
+            <ThemeToggle />
             <a
               href="#solutions"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-5 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-5 py-2 text-sm font-semibold text-white transition"
             >
               Get Started
             </a>
@@ -1167,15 +1476,16 @@ export default function Home() {
 
           {/* Mobile hamburger */}
           <div className="flex items-center gap-3 md:hidden">
+            <ThemeToggle />
             <a
               href="#solutions"
-              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-4 py-2 text-sm font-semibold text-white transition"
+              className="nav-btn-glow rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-4 py-2 text-sm font-semibold text-white transition"
             >
               Get Started
             </a>
             <button
               onClick={() => setMobileNav(!mobileNav)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3b1154] text-[#f4eefa] transition hover:border-[#a020d0]/40 hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border-subtle)] text-[var(--text-primary)] transition hover:border-[#b14eb5]/40 hover:text-[var(--text-primary)]"
               aria-label="Toggle menu"
             >
               {mobileNav ? (
@@ -1193,9 +1503,9 @@ export default function Home() {
 
         {/* Mobile dropdown */}
         {mobileNav && (
-          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[#3b1154] bg-[#130d1c]/95 backdrop-blur-lg p-4 md:hidden">
+          <div className="mt-2 mx-auto max-w-7xl rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]/95 backdrop-blur-lg p-4 md:hidden">
             {[
-              { label: "Packages", href: "#packages" },
+              { label: "Tiers", href: "#packages" },
               { label: "Support", href: "#support" },
               { label: "Solutions", href: "#solutions" },
               { label: "FAQ", href: "#faq" },
@@ -1204,18 +1514,20 @@ export default function Home() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileNav(false)}
-                className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
+                className="block rounded-lg px-4 py-3 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--border-subtle)]/30 hover:text-[#b14eb5]"
               >
                 {link.label}
               </a>
             ))}
+            {/* Web Services link hidden for now
             <a
               href="/web-services"
               onClick={() => setMobileNav(false)}
-              className="block rounded-lg px-4 py-3 text-sm font-medium text-[#f4eefa] transition hover:bg-[#3b1154]/30 hover:text-[#a020d0]"
+              className="block rounded-lg px-4 py-3 text-sm font-medium text-[var(--text-primary)] transition hover:bg-[var(--border-subtle)]/30 hover:text-[#b14eb5]"
             >
               Web Services
             </a>
+            */}
           </div>
         )}
       </nav>
@@ -1224,7 +1536,7 @@ export default function Home() {
       <section className="hero-mesh relative overflow-hidden px-4 pb-16 pt-32 sm:px-6 sm:pb-20 sm:pt-40">
         <span className="hero-blob-3" />
         <div className="relative mx-auto max-w-4xl text-center">
-          <h1 className="animate-hero font-heading text-3xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="animate-hero font-heading text-3xl font-extrabold leading-tight text-[var(--text-primary)] sm:text-5xl lg:text-6xl">
             Build Your Custom
             <br />
             Automation Stack
@@ -1232,12 +1544,22 @@ export default function Home() {
           <div className="animate-hero-delay mx-auto mt-4 w-48 sm:w-64">
             <div className="glow-line" />
           </div>
-          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[#c4a8d4] sm:text-lg">
+          <p className="animate-hero-delay-2 mx-auto mt-6 max-w-xl text-base text-[var(--text-muted)] sm:text-lg">
             Transparent pricing. Expert delivery. Select what you need.
           </p>
-          <div className="animate-hero-delay-2 badge-glow mt-4 inline-flex items-center gap-2 rounded-full border border-[#a020d0]/20 bg-[#a020d0]/5 px-4 py-2 text-xs font-medium text-[#a020d0] sm:text-sm">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#a020d0] animate-pulse" />
-            Select 3+ solutions for a 10% bundle discount
+          <div className="animate-hero-delay-2 mt-8 flex justify-center">
+            <div className="bundle-callout group relative flex items-center gap-4 rounded-2xl border border-[#b14eb5]/30 bg-gradient-to-r from-[#b14eb5]/[0.06] via-[#b14eb5]/[0.12] to-[#b14eb5]/[0.06] px-5 py-3.5 backdrop-blur-sm sm:gap-5 sm:px-7 sm:py-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#63077d] to-[#b14eb5] text-white shadow-lg shadow-[#b14eb5]/30 sm:h-14 sm:w-14">
+                <Tag size={22} weight="fill" />
+              </div>
+              <div className="flex flex-col text-left">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-heading text-2xl font-extrabold text-[#b14eb5] sm:text-3xl">10% OFF</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] sm:text-sm">Bundle</span>
+                </div>
+                <span className="text-xs text-[var(--text-secondary)] sm:text-sm">Auto-applied when you select 3+ solutions</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1248,65 +1570,10 @@ export default function Home() {
       {/* ── How It Works ── */}
       <HowItWorks />
 
-      {/* ── Packages ── */}
+      {/* ── Engagement Tiers — connected journey ── */}
       <section id="packages" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16" ref={packagesRef}>
-        <SectionLabel label="Packages" title="Start with a Bundle" />
-        <div className="grid gap-5 md:grid-cols-3">
-          {packages.map((pkg) => {
-            const { solutions: pkgSolutions, mandays, total: pkgTotal } = getPackagePrice(pkg);
-            const isActive = pkg.solutionIds.every((id) => selectedIds.has(id));
-            return (
-              <div
-                key={pkg.name}
-                data-reveal-id={`pkg-${pkg.name}`}
-                className={`${revealedIds.has(`pkg-${pkg.name}`) ? "visible" : "reveal"} pkg-border overflow-hidden ${pkg.glowClass} ${isActive ? "pkg-active" : ""}`}
-              >
-                <div className={`pkg-header-shimmer bg-gradient-to-r ${pkg.gradient} px-5 py-3`}>
-                  <h3 className="font-heading text-sm font-bold text-white sm:text-base">
-                    {pkg.name}
-                  </h3>
-                  <p className="text-xs text-white/70">{pkg.tagline}</p>
-                </div>
-                <div className="p-5">
-                  <ul className="mb-4 space-y-1.5">
-                    {pkgSolutions.map((s) => (
-                      <li key={s.id} className="flex items-center gap-2 text-xs text-[#c4a8d4] sm:text-sm">
-                        <SolutionIcon name={s.icon} size={16} className="text-[#a020d0] shrink-0" />
-                        <span className="text-[#e8d8f4]">{s.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mb-4 flex items-baseline gap-2">
-                    <span className="text-xl font-bold text-white sm:text-2xl">
-                      ${pkgTotal.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-[#c4a8d4]">{mandays} mandays</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedIds((prev) => {
-                        const next = new Set(prev);
-                        if (isActive) {
-                          pkg.solutionIds.forEach((id) => next.delete(id));
-                        } else {
-                          pkg.solutionIds.forEach((id) => next.add(id));
-                        }
-                        return next;
-                      });
-                    }}
-                    className={`pkg-btn-glow w-full rounded-lg py-2.5 text-sm font-semibold transition ${
-                      isActive
-                        ? "border border-[#3b1154] bg-transparent text-gray-400 hover:text-white"
-                        : "bg-gradient-to-r from-[#63077d] to-[#a020d0] text-white"
-                    }`}
-                  >
-                    {isActive ? "Remove Package" : "Select Package"}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <SectionLabel label="Engagement Tiers" title="Choose Your Tier" />
+        <TierJourney selectedIds={selectedIds} setSelectedIds={setSelectedIds} />
       </section>
 
       {/* ── Support & Training ── */}
@@ -1373,20 +1640,20 @@ export default function Home() {
                   <div
                     key={card.title}
                     data-reveal-id={`support-${i}`}
-                    className={`${revealedIds.has(`support-${i}`) ? "visible" : "reveal"} card-idle group flex flex-col rounded-xl border-2 border-[#3b1154] bg-[#130d1c] p-5 sm:p-6`}
+                    className={`${revealedIds.has(`support-${i}`) ? "visible" : "reveal"} card-idle group flex flex-col rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--bg-card)] p-5 sm:p-6`}
                   >
-                    <div className="mb-3"><SolutionIcon name={card.icon} size={32} className="text-[#a020d0]" /></div>
-                    <h3 className="font-heading mb-2 text-base font-semibold text-white">
+                    <div className="mb-3"><SolutionIcon name={card.icon} size={32} className="text-[#b14eb5]" /></div>
+                    <h3 className="font-heading mb-2 text-base font-semibold text-[var(--text-primary)]">
                       {card.title}
                     </h3>
-                    <p className="mb-5 flex-1 text-sm leading-relaxed text-[#e8d8f4]">
+                    <p className="mb-5 flex-1 text-sm leading-relaxed text-[var(--text-secondary)]">
                       {card.description}
                     </p>
                     <div className="flex items-center justify-between">
                       <span className="price-glow text-sm font-bold">{card.price}</span>
                       <button
                         onClick={() => setSupportModal(i)}
-                        className="rounded-lg border border-[#a020d0]/30 px-4 py-2 text-sm font-semibold text-[#a020d0] transition hover:bg-[#a020d0]/10 hover:border-[#a020d0]/60 hover:shadow-[0_0_12px_rgba(160,32,208,0.25)]"
+                        className="rounded-lg border border-[#b14eb5]/30 px-4 py-2 text-sm font-semibold text-[#b14eb5] transition hover:bg-[#b14eb5]/10 hover:border-[#b14eb5]/60 hover:shadow-[0_0_12px_rgba(177,78,181,0.25)]"
                       >
                         Learn More
                       </button>
@@ -1405,56 +1672,56 @@ export default function Home() {
               >
                 <style>{`@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }`}</style>
                 <div
-                  className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl border border-[#3b1154] bg-[#130d1c] p-6 shadow-2xl sm:p-8"
+                  className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6 shadow-2xl sm:p-8"
                   style={{ animation: "fade-in 0.2s ease-out" }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => setSupportModal(null)}
-                    className="absolute right-4 top-4 text-gray-500 hover:text-gray-300 transition"
+                    className="absolute right-4 top-4 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition"
                   >
                     <X size={22} />
                   </button>
 
-                  <div className="mb-4"><SolutionIcon name={activeCard.icon} size={40} className="text-[#a020d0]" /></div>
-                  <h2 className="font-heading text-xl font-bold text-white sm:text-2xl mb-1">
+                  <div className="mb-4"><SolutionIcon name={activeCard.icon} size={40} className="text-[#b14eb5]" /></div>
+                  <h2 className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl mb-1">
                     {activeCard.title}
                   </h2>
-                  <p className="text-lg font-bold text-[#a020d0] mb-6">{activeCard.price}</p>
+                  <p className="text-lg font-bold text-[#b14eb5] mb-6">{activeCard.price}</p>
 
-                  <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-3">What&apos;s Included</h3>
+                  <h3 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-3">What&apos;s Included</h3>
                   <ul className="mb-6 space-y-2">
                     {activeCard.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm text-[#e8d8f4]">
-                        <Check size={14} weight="bold" className="mt-0.5 text-[#a020d0] shrink-0" />
+                      <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)]">
+                        <Check size={14} weight="bold" className="mt-0.5 text-[#b14eb5] shrink-0" />
                         {item}
                       </li>
                     ))}
                   </ul>
 
-                  <div className="space-y-3 rounded-lg border border-[#3b1154] bg-[#0c0812] p-4">
+                  <div className="space-y-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-primary)] p-4">
                     {"bestFor" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Best for</span>
-                        <p className="text-sm text-[#e8d8f4]">{activeCard.bestFor}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Best for</span>
+                        <p className="text-sm text-[var(--text-secondary)]">{activeCard.bestFor}</p>
                       </div>
                     )}
                     {"planOptions" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Plan options</span>
-                        <p className="text-sm text-[#e8d8f4]">{activeCard.planOptions}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Plan options</span>
+                        <p className="text-sm text-[var(--text-secondary)]">{activeCard.planOptions}</p>
                       </div>
                     )}
                     {"commitment" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Minimum commitment</span>
-                        <p className="text-sm text-[#e8d8f4]">{activeCard.commitment}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Minimum commitment</span>
+                        <p className="text-sm text-[var(--text-secondary)]">{activeCard.commitment}</p>
                       </div>
                     )}
                     {"timeline" in activeCard && (
                       <div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[#c4a8d4]">Timeline</span>
-                        <p className="text-sm text-[#e8d8f4]">{activeCard.timeline}</p>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Timeline</span>
+                        <p className="text-sm text-[var(--text-secondary)]">{activeCard.timeline}</p>
                       </div>
                     )}
                   </div>
@@ -1465,8 +1732,8 @@ export default function Home() {
         );
       })()}
 
-      {/* ── Testimonials ── */}
-      <TestimonialCarousel />
+      {/* ── Testimonials ── (hidden for now) */}
+      {/* <TestimonialCarousel /> */}
 
       {/* ── Solutions ── */}
       <section id="solutions" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
@@ -1475,31 +1742,128 @@ export default function Home() {
           <div className="min-w-0 flex-1">
             <SectionLabel label="Solutions" title="Choose Your Stack" />
 
-            {/* Category filter pills */}
-            <style>{`
-              @media (max-width: 767px) {
-                .cat-pills { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
-                .cat-pills > button { padding: 12px 16px !important; border: 1px solid #63077d !important; width: 100%; }
-                .cat-pill-inactive { background: #1e293b !important; color: #ffffff !important; }
-              }
-            `}</style>
-            <div className="cat-pills mb-8 flex flex-wrap gap-2">
-              {(["All", ...categories] as const).map((cat) => {
-                const isActive = activeCategory === cat;
-                return (
+            {/* ─── LAYER 1 — Discovery hero (front door) ─── */}
+            {discoverySolution && (() => {
+              const isDiscoverySelected = selectedIds.has(discoverySolution.id);
+              return (
+                <div className="discovery-hero mb-10 rounded-2xl border-2 border-[#63077d]/45 bg-[var(--bg-card)] p-5 sm:p-7">
+                  <div className="flex flex-col gap-5 md:flex-row md:items-center md:gap-7">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#63077d] text-white sm:h-16 sm:w-16">
+                      <SolutionIcon name={discoverySolution.icon} size={30} className="text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b14eb5]">
+                        Not sure where to start? Begin here
+                      </p>
+                      <h3 className="mt-2 font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
+                        {discoverySolution.name}
+                      </h3>
+                      <p className="mt-2 text-sm leading-relaxed text-[var(--text-secondary)] sm:text-base">
+                        {discoverySolution.description}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-row items-center justify-between gap-4 md:flex-col md:items-end md:justify-center md:text-right">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">From</p>
+                        <p className="font-heading text-xl font-bold text-[var(--text-primary)] sm:text-2xl">
+                          {formatSGD(discoverySolution.priceFrom ?? 0)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => toggle(discoverySolution.id)}
+                        className={`whitespace-nowrap rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+                          isDiscoverySelected
+                            ? "border border-[var(--border-subtle)] bg-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                            : "bg-[#63077d] text-white hover:bg-[#4d0561]"
+                        }`}
+                      >
+                        {isDiscoverySelected ? "Remove" : "Add to Quote"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ─── LAYER 2 — Problem-led entry ─── */}
+            <div className="mb-12">
+              <h3 className="font-heading text-base font-bold text-[var(--text-primary)] sm:text-lg">
+                What&rsquo;s slowing your business down?
+              </h3>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                Tap whatever sounds familiar — we&rsquo;ll narrow the list below to fit.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {BUSINESS_PROBLEMS.map((p) => {
+                  const isActive = problemFilter === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => onProblemSelect(p.id)}
+                      aria-pressed={isActive}
+                      className={`problem-card rounded-xl border p-4 text-left text-sm transition ${
+                        isActive
+                          ? "border-[#b14eb5] bg-[var(--bg-card-active)] text-[var(--text-primary)]"
+                          : "border-[var(--border-subtle)] bg-[var(--bg-card)] text-[var(--text-secondary)]"
+                      }`}
+                    >
+                      <span className="block font-medium leading-snug">{p.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ─── LAYER 3 — Browse fallback (heading, explainer, pills, grid) ─── */}
+            <div id="solutions-grid" className="scroll-mt-24">
+              <h3 className="font-heading text-base font-bold text-[var(--text-primary)] sm:text-lg">
+                Or browse all solutions
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">
+                <span className="font-semibold text-[var(--text-secondary)]">Template</span> — fixed scope, fixed price.{" "}
+                <span className="font-semibold text-[var(--text-secondary)]">Configured</span> — tailored to your setup; the &lsquo;from&rsquo; price is confirmed at Discovery.
+              </p>
+
+              {activeProblem && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#b14eb5]/40 bg-[#b14eb5]/10 px-4 py-2.5">
+                  <span className="text-sm text-[var(--text-secondary)]">
+                    Showing solutions for: <strong className="text-[var(--text-primary)]">{activeProblem.label}</strong>
+                  </span>
                   <button
-                    key={cat}
-                    onClick={() => setActiveCategory(cat as Category | "All")}
-                    className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
-                      isActive
-                        ? "pill-active text-white shadow-lg shadow-[#a020d0]/10"
-                        : `cat-pill-inactive pill-inactive border border-[#3b1154] text-[#c4a8d4] hover:border-[#a020d0]/40 hover:text-gray-200`
-                    }`}
+                    onClick={() => setProblemFilter(null)}
+                    className="text-xs font-semibold uppercase tracking-wider text-[#b14eb5] transition hover:text-[#c878f0]"
                   >
-                    {cat}
+                    Clear
                   </button>
-                );
-              })}
+                </div>
+              )}
+
+              {/* Category filter pills (Start Here excluded — Discovery is its own block above) */}
+              <style>{`
+                @media (max-width: 767px) {
+                  .cat-pills { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
+                  .cat-pills > button { padding: 12px 16px !important; border: 1px solid #63077d !important; width: 100%; }
+                  .cat-pill-inactive { background: #1e293b !important; color: #ffffff !important; }
+                }
+              `}</style>
+              <div className="cat-pills mt-5 mb-8 flex flex-wrap gap-2">
+                {(["All", ...categories.filter((c) => c !== "Start Here")] as const).map((cat) => {
+                  const isActive = activeCategory === cat && !activeProblem;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => onCategorySelect(cat as Category | "All")}
+                      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
+                        isActive
+                          ? "pill-active text-white shadow-lg shadow-[#b14eb5]/10"
+                          : `cat-pill-inactive pill-inactive border border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[#b14eb5]/40 hover:text-[var(--text-secondary)]`
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Solution cards grid */}
@@ -1507,37 +1871,68 @@ export default function Home() {
               {filtered.map((s) => {
                 const isSelected = selectedIds.has(s.id);
                 return (
-                  <button
+                  <div
                     key={s.id}
                     data-reveal-id={s.id}
-                    onClick={() => toggle(s.id)}
-                    className={`${revealedIds.has(s.id) ? "visible" : "reveal"} group relative rounded-xl border-2 p-5 text-left sm:p-6 min-h-[180px] sm:min-h-[200px] flex flex-col ${
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setDetailSolutionId(s.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setDetailSolutionId(s.id);
+                      }
+                    }}
+                    aria-label={`View details for ${s.name}`}
+                    className={`${revealedIds.has(s.id) ? "visible" : "reveal"} group relative cursor-pointer rounded-xl border-2 p-5 text-left sm:p-6 min-h-[180px] flex flex-col ${
                       isSelected
-                        ? "card-active border-[#a020d0] bg-[#200d30]"
-                        : "card-idle border-[#3b1154] bg-[#130d1c]"
+                        ? "card-active border-[#b14eb5] bg-[var(--bg-card-active)]"
+                        : "card-idle border-[var(--border-subtle)] bg-[var(--bg-card)]"
                     }`}
                   >
-                    {isSelected && (
-                      <div className="check-pop absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-r from-[#63077d] to-[#a020d0] text-white shadow-lg shadow-[#a020d0]/30">
-                        <Check size={14} weight="bold" />
-                      </div>
-                    )}
-                    <div className="mb-3"><SolutionIcon name={s.icon} size={32} className="text-[#a020d0]" /></div>
-                    <h3 className="font-heading mb-1.5 text-sm font-semibold text-white sm:text-base">
-                      {s.name}
-                    </h3>
-                    <p className="mb-4 flex-1 text-xs leading-relaxed text-[#e8d8f4] sm:text-sm">
-                      {s.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-[#c4a8d4]">
-                        {s.mandays} mandays
-                      </span>
-                      <span className="price-glow text-sm font-bold sm:text-base">
-                        ${(s.mandays * MANDAY_RATE).toLocaleString()}
+                    <div className="mb-3 flex items-center justify-between">
+                      <SolutionIcon name={s.icon} size={32} className="text-[#b14eb5]" />
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${tierBadgeClass(s.tier)}`}>
+                        {s.tier}
                       </span>
                     </div>
-                  </button>
+                    <h3 className="font-heading mb-1.5 text-sm font-semibold text-[var(--text-primary)] sm:text-base">
+                      {s.name}
+                    </h3>
+                    <p className="mb-4 flex-1 text-xs leading-snug text-[var(--text-secondary)] sm:text-sm">
+                      {s.hook}
+                    </p>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs text-[var(--text-muted)]">
+                        From <span className="price-glow font-bold text-[var(--text-primary)]">
+                          {s.priceFrom !== undefined ? formatSGD(s.priceFrom) : "Quote on Discovery"}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggle(s.id); }}
+                        aria-pressed={isSelected}
+                        aria-label={isSelected ? `Remove ${s.name} from quote` : `Add ${s.name} to quote`}
+                        className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                          isSelected
+                            ? "bg-[#63077d] text-white hover:bg-[#4d0561]"
+                            : "border border-[#b14eb5]/40 text-[#b14eb5] hover:border-[#b14eb5] hover:bg-[#b14eb5]/10"
+                        }`}
+                      >
+                        {isSelected ? (
+                          <>
+                            <Check size={12} weight="bold" />
+                            <span>Added</span>
+                          </>
+                        ) : (
+                          <>
+                            <Plus size={12} weight="bold" />
+                            <span>Add</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -1547,7 +1942,7 @@ export default function Home() {
 
           {/* ── Cart sidebar (desktop) ── */}
           <div className="hidden w-80 shrink-0 lg:block">
-            <div className="sticky top-24 rounded-xl border border-[#3b1154] bg-[#130d1c] p-6">
+            <div className="sticky top-24 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)] p-6">
               {quoteSubmitted ? (
                 <div className="py-8 text-center">
                   <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
@@ -1555,33 +1950,33 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h2 className="font-heading mb-2 text-xl font-bold text-white">
+                  <h2 className="font-heading mb-2 text-xl font-bold text-[var(--text-primary)]">
                     Quote Requested!
                   </h2>
-                  <p className="mb-6 text-sm text-[#c4a8d4]">
+                  <p className="mb-6 text-sm text-[var(--text-muted)]">
                     We&apos;ll be in touch within 24 hours with your custom proposal.
                   </p>
                   <button
                     onClick={() => { setQuoteSubmitted(false); setSelectedIds(new Set()); }}
-                    className="rounded-lg border border-[#3b1154] px-6 py-2.5 text-sm font-semibold text-gray-300 transition hover:border-[#a020d0]/40 hover:text-white"
+                    className="rounded-lg border border-[var(--border-subtle)] px-6 py-2.5 text-sm font-semibold text-[var(--text-secondary)] transition hover:border-[#b14eb5]/40 hover:text-[var(--text-primary)]"
                   >
                     Start New Quote
                   </button>
                 </div>
               ) : (
                 <>
-                  <h2 className="font-heading mb-4 text-lg font-bold text-white">
+                  <h2 className="font-heading mb-4 text-lg font-bold text-[var(--text-primary)]">
                     Your Selection
                   </h2>
 
                   {selected.length === 0 ? (
                     <div className="py-10 text-center">
-                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#3b1154]">
-                        <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border-subtle)]">
+                        <svg className="h-5 w-5 text-[var(--text-tertiary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                       </div>
-                      <p className="text-sm text-[#c4a8d4]">
+                      <p className="text-sm text-[var(--text-muted)]">
                         Click on solutions to add them to your quote.
                       </p>
                     </div>
@@ -1591,15 +1986,18 @@ export default function Home() {
                         {selected.map((s) => (
                           <div key={s.id} className="flex items-start justify-between gap-2">
                             <div className="flex items-start gap-2">
-                              <SolutionIcon name={s.icon} size={18} className="text-[#a020d0] shrink-0 mt-0.5" />
+                              <SolutionIcon name={s.icon} size={18} className="text-[#b14eb5] shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-sm font-medium text-[#f4eefa]">{s.name}</p>
-                                <p className="text-xs text-[#c4a8d4]">{s.mandays} mandays</p>
+                                <p className="text-sm font-medium text-[var(--text-primary)]">{s.name}</p>
+                                <p className="text-xs text-[var(--text-muted)]">
+                                  <span className={`mr-1.5 inline-flex rounded px-1.5 py-px text-[10px] font-medium uppercase tracking-wider ${tierBadgeClass(s.tier)}`}>{s.tier}</span>
+                                  From {formatSGD(s.priceFrom ?? 0)}
+                                </p>
                               </div>
                             </div>
                             <button
                               onClick={() => toggle(s.id)}
-                              className="shrink-0 text-[#8a6aaa] hover:text-red-400"
+                              className="shrink-0 text-[var(--text-tertiary)] hover:text-red-400"
                             >
                               <X size={16} />
                             </button>
@@ -1607,27 +2005,24 @@ export default function Home() {
                         ))}
                       </div>
 
-                      <div className="border-t border-[#3b1154]/50 pt-4">
-                        <div className="mb-1 flex justify-between text-sm text-[#c4a8d4]">
-                          <span>Total mandays</span>
-                          <span>{totalMandays}</span>
-                        </div>
+                      <div className="border-t border-[var(--border-subtle)]/50 pt-4">
+                        <p className="mb-2 text-[10px] uppercase tracking-wider text-[var(--text-tertiary)]">Indicative totals</p>
                         {discounted && (
                           <>
-                            <div className="mb-1 flex justify-between text-sm text-[#8a6aaa] line-through">
+                            <div className="mb-1 flex justify-between text-sm text-[var(--text-tertiary)] line-through">
                               <span>Subtotal</span>
-                              <span>${subtotal.toLocaleString()}</span>
+                              <span>{formatSGD(subtotal)}</span>
                             </div>
                             <div className="mb-1 flex justify-between text-sm font-medium text-emerald-400">
                               <span>Bundle discount (10%)</span>
-                              <span>-${(subtotal - total).toLocaleString()}</span>
+                              <span>-{formatSGD(subtotal - total)}</span>
                             </div>
                           </>
                         )}
-                        <div className="mt-2 flex justify-between text-lg font-bold text-white">
-                          <span>Total</span>
+                        <div className="mt-2 flex justify-between text-lg font-bold text-[var(--text-primary)]">
+                          <span>From</span>
                           <span className={`inline-block ${pricePop ? "price-pop total-glow" : ""}`}>
-                            ${total.toLocaleString()}
+                            {formatSGD(total)}
                           </span>
                         </div>
                       </div>
@@ -1650,7 +2045,7 @@ export default function Home() {
       {/* ── FAQ ── */}
       <section id="faq" className="scroll-mt-24 mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <SectionLabel label="FAQ" title="Frequently Asked Questions" />
-        <div className="mx-auto max-w-3xl divide-y divide-[#3b1154] rounded-xl border border-[#3b1154] bg-[#130d1c]" ref={faqRef}>
+        <div className="mx-auto max-w-3xl divide-y divide-[var(--border-subtle)] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-card)]" ref={faqRef}>
           {[
             {
               q: "How long does it take to build my automation?",
@@ -1662,7 +2057,7 @@ export default function Home() {
             },
             {
               q: "What tools and platforms do you use?",
-              a: "We use the best AI and automation technology available today — including Claude AI for intelligent agents, and purpose-built platforms for workflows, CRMs, and integrations. We choose the right tool for your specific business needs and budget.",
+              a: "We build on modern, well-supported technology — not proprietary black boxes. Claude (Anthropic) for intelligent agents, n8n for workflow orchestration, and established platforms for messaging, data, and integrations. We choose the right tool for your specific needs, so solutions stay maintainable and you're never locked to one vendor.",
             },
             {
               q: "What happens after the build is done?",
@@ -1684,13 +2079,13 @@ export default function Home() {
               className={`${revealedIds.has(`faq-${i}`) ? "visible" : "reveal"} w-full text-left px-5 py-4 sm:px-6 sm:py-5 transition`}
             >
               <div className="flex items-center justify-between gap-4">
-                <h3 className="text-sm font-semibold text-white sm:text-base">{faq.q}</h3>
-                <span className="shrink-0 text-lg text-[#a020d0]">
+                <h3 className="text-sm font-semibold text-[var(--text-primary)] sm:text-base">{faq.q}</h3>
+                <span className="shrink-0 text-lg text-[#b14eb5]">
                   {openFaq === i ? "−" : "+"}
                 </span>
               </div>
               {openFaq === i && (
-                <p className="mt-3 text-sm leading-relaxed text-[#e8d8f4]">{faq.a}</p>
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-secondary)]">{faq.a}</p>
               )}
             </button>
           ))}
@@ -1698,16 +2093,23 @@ export default function Home() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#3b1154]/30 bg-[#0c0812]">
+      <footer className="border-t border-[var(--border-subtle)]/30 bg-[var(--bg-primary)]">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-10 text-center sm:flex-row sm:justify-between sm:text-left" ref={footerRef}>
           <div data-reveal-id="footer-brand" className={revealedIds.has("footer-brand") ? "visible" : "reveal"}>
-            <span className="font-heading text-lg font-bold text-white tracking-tight">
-              MyRepublic <span className="text-[#a020d0]">Business</span>
+            <span className="flex items-center gap-2 justify-center sm:justify-start">
+              <Image
+                src="/myrepublic-logo.png"
+                alt="MyRepublic"
+                width={1080}
+                height={361}
+                className="h-7 w-auto sm:h-8"
+              />
+              <span className="font-heading text-lg font-bold text-[#b14eb5] tracking-tight">Business</span>
             </span>
-            <p className="mt-1 text-sm text-[#c4a8d4]">Automation solutions, delivered by experts.</p>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Automation solutions, delivered by experts.</p>
           </div>
           <div data-reveal-id="footer-copy" className={revealedIds.has("footer-copy") ? "visible" : "reveal"}>
-            <p className="text-sm text-[#c4a8d4]">
+            <p className="text-sm text-[var(--text-muted)]">
               &copy; {new Date().getFullYear()} MyRepublic Business. All rights reserved.
             </p>
           </div>
@@ -1716,14 +2118,14 @@ export default function Home() {
 
       {/* ── Mobile fixed bottom bar ── */}
       {selected.length > 0 && !quoteSubmitted && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#3b1154] bg-[#130d1c]/95 p-4 backdrop-blur-lg lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--border-subtle)] bg-[var(--bg-card)]/95 p-4 backdrop-blur-lg lg:hidden">
           <div className="mx-auto flex items-center justify-between">
             <div>
-              <p className="text-xs text-[#c4a8d4]">
+              <p className="text-xs text-[var(--text-muted)]">
                 {selected.length} solution{selected.length !== 1 && "s"} selected
               </p>
-              <p className="text-lg font-bold text-white">
-                ${total.toLocaleString()}
+              <p className="text-lg font-bold text-[var(--text-primary)]">
+                From {formatSGD(total)}
                 {discounted && (
                   <span className="ml-1 text-xs font-medium text-emerald-400">-10%</span>
                 )}
@@ -1731,7 +2133,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setShowDrawer(true)}
-              className="rounded-lg bg-gradient-to-r from-[#63077d] to-[#a020d0] px-5 py-2.5 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#a020d0]/20"
+              className="rounded-lg bg-gradient-to-r from-[#63077d] to-[#b14eb5] px-5 py-2.5 text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-[#b14eb5]/20"
             >
               View Quote
             </button>
@@ -1743,7 +2145,6 @@ export default function Home() {
       {showDrawer && (
         <MobileDrawer
           selected={selected}
-          totalMandays={totalMandays}
           subtotal={subtotal}
           total={total}
           discounted={discounted}
@@ -1757,7 +2158,6 @@ export default function Home() {
       {showModal && (
         <QuoteModal
           selected={selected}
-          totalMandays={totalMandays}
           total={total}
           discounted={discounted}
           subtotal={subtotal}
@@ -1765,6 +2165,20 @@ export default function Home() {
           onSuccess={() => { setShowModal(false); setQuoteSubmitted(true); }}
         />
       )}
+
+      {/* ── Solution detail popup ── */}
+      {detailSolutionId && (() => {
+        const sol = solutions.find((s) => s.id === detailSolutionId);
+        if (!sol) return null;
+        return (
+          <SolutionDetailModal
+            solution={sol}
+            isSelected={selectedIds.has(sol.id)}
+            onToggle={() => { toggle(sol.id); setDetailSolutionId(null); }}
+            onClose={() => setDetailSolutionId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
