@@ -16,7 +16,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 
 function useTheme() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   useEffect(() => {
     const t = document.documentElement.getAttribute("data-theme");
     if (t === "light" || t === "dark") setTheme(t);

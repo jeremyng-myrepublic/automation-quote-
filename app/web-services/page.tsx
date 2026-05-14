@@ -19,7 +19,7 @@ function StepIcon({ name, size = 28, className }: { name: string; size?: number;
 }
 
 function useTheme() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   useEffect(() => {
     const t = document.documentElement.getAttribute("data-theme");
     if (t === "light" || t === "dark") setTheme(t);

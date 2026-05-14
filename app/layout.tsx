@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Browse and select from 48 automation solutions across AI Agents, Email, CRM, Workflows, and more. Transparent pricing. Expert delivery.",
 };
 
-const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t='dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t='light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();`;
 
 export default function RootLayout({
   children,
@@ -29,7 +29,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${sora.variable} h-full antialiased`}
-      data-theme="dark"
+      data-theme="light"
       suppressHydrationWarning
     >
       <head>
